@@ -1,0 +1,5 @@
+In response to a DOS attack, deployed a firewall rule to drop large packets,
+combined with Flowspec relaying that rule to *every* edge router, caused every router to run out of ram and crash. Thundering-herd network failure resulting in an hour of downtime.
+
+Matthew Prince, "Today's Outage Post Mortem"
+http://blog.cloudflare.com/todays-outage-post-mortem-82515

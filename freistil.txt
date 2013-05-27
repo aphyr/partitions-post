@@ -1,0 +1,23 @@
+"Almost all our servers are provided by Hetzner AG which operates multiple
+datacenters in different parts of Germany."
+
+"...our monitoring system started at about 10:10 UTC to alert us of network
+packet loss levels of 50% to 100% with a number of servers and a lot of failing
+service checks, which most of the times is a symptom of connectivity problems.
+We recognized quickly that most of the servers with bad connectivity were
+located in Hetzner datacenter #10."
+
+Next day another outage, caused by a router firmware bug
+
+"Unfortunately, the malfunctioning network had caused additional problems which
+we became aware of in the afternoon when a customer called our support hotline
+because their website failed to deliver certain image files. We found that this
+was caused by a split-brain situation on the storage cluster “stor02″ where
+changes made on node “stor02b” weren’t reflected on “stor02a” and the self-heal
+algorithm built into the Gluster filesystem was not able to resolve this
+inconsistency between the two data sets."
+
+Resolving the inconsistency led to "brief overload of the web nodes because of a short surge in network traffic."
+
+Jochen Lillich, "Post mortem: Network issues last week"
+http://www.freistil.it/2013/02/post-mortem-network-issues-last-week/

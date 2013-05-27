@@ -1,0 +1,19 @@
+Power failures on both of a redundant pair of rack switches.
+
+"The second stage of the outage occurred when the second switch in that rack lost power. We still don't have an explanation for why this happened. The effect, though, was less contained than the first stage: it cut off communication between two other racks and took all On Demand services down with it."
+
+Shawn Hargan, Fog Creek Software Postmortem
+http://status.fogcreek.com/2011/06/postmortem.html
+
+
+
+"A network loop had formed between several switches.
+
+The gateways controlling access to the switch management network were isolated from each other, generating a split-brain scenario. Neither were accessible due to a sudden traffic flood.
+
+The flood was the result of a multi-switch BPDU (bridge protocol data unit) flood, indicating a spanning-tree flap. This is most likely what was changing the loop domain."
+
+Two hours of downtime
+
+Bradford Ley, May 5-6 Network Maintenance Post-Mortem
+http://status.fogcreek.com/2012/05/may-5-6-network-maintenance-post-mortem.html

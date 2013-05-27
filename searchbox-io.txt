@@ -1,0 +1,15 @@
+Another elasticsearch split-brain due to GC pressure
+
+"If you don’t have enough memory for each node, JVM starts garbage collections
+and if garbage collection operations goes very frequently that nodes has
+potential candidates to be removed from cluster, due to not answering ping
+requests in time."
+
+"To avoid split brain issues with discovery.zen.minimum_master_nodes"
+
+Just because you installed a CP system doesn't mean you configured it correctly.
+
+"Network is evil, less communication means low latency and fast responses"
+
+"January 2013 Service Interruptions Postmortem"
+http://blog.searchbox.io/blog/2013/03/03/january-postmortem
