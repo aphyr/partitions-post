@@ -1,0 +1,5 @@
+Wish I remembered where this guy worked, but after my RICON talk someone
+indicated to me that their Mongo replica sets failed over on a *weekly*
+basis--without node failures. This happened on real hardware, not EC2. That
+suggests a partition to me--whether in the network or due to the mongo process
+going unresponsive for minutes on end.

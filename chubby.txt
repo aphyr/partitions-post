@@ -1,0 +1,17 @@
+"Now we briefly describe the typical causes of outages
+in our cells. If we assume (optimistically) that a cell is
+“up” if it has a master that is willing to serve, on a sam-
+ple of our cells we recorded 61 outages over a period of
+a few weeks, amounting to 700 cell-days of data in to-
+tal. We excluded outages due to maintenance that shut
+down the data centre. All other causes are included: net-
+work congestion, maintenance, overload, and errors due
+to operators, software, and hardware. Most outages were
+15s or less, and 52 were under 30s; most of our appli-
+cations are not affected significantly by Chubby outages
+under 30s. The remaining nine outages were caused by
+network maintenance (4), suspected network connectiv-
+ity problems (2), software errors (2), and overload (1)."
+
+The Chubby lock service for loosely-coupled distributed systems
+https://www.google.com/url?sa=t&rct=j&q=&esrc=s&source=web&cd=2&ved=0CDoQFjAB&url=http%3A%2F%2Fresearch.google.com%2Farchive%2Fchubby-osdi06.pdf&ei=4oKjUdiLLcK8igLs-oHoDQ&usg=AFQjCNHQVBYDdvSJ-VgibUUfKkVNE8uyFw&sig2=69pBiqN_Y-UlBP_TSoDO2A&bvm=bv.47008514,d.cGE

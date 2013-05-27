@@ -1,0 +1,19 @@
+"Typical first year for a new cluster: ...
+
+~5 racks go wonky (40-80 machines see 50% packetloss)
+~8 network maintenances (4 might cause ~30-minute random connectivity losses)
+~3 router failures (have to immediately pull traffic for an hour)
+
+Long distance links: wild dogs, sharks, dead horses, drunken hunters, etc."
+
+"Challenge Easy-to-use abstractions for resolving
+conflicting updates to multiple versions of a piece of state
+
+...
+
+– Also useful for reconciling replicated state in different data centers
+after repairing a network partition"
+
+
+Jeff Dean: Design Lessons and Advice from Building Large Scale Distributed Systems
+http://www.cs.cornell.edu/projects/ladis2009/talks/dean-keynote-ladis2009.pdf

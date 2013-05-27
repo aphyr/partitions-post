@@ -1,0 +1,21 @@
+"With unlucky timing and the extra time that is required for the agent to record its running state for analysis, the link remained active long enough for the peer switch to detect a lack of heartbeat messages while still seeing an active link and failover using the more disruptive method.
+
+When this happened it caused a great deal of churn within the network as all of our aggregated links had to be re-established, leader election for spanning-tree had to take place, and all of the links in the network had to go through a spanning-tree reconvergence. This effectively caused all traffic between access switches to be blocked for roughly a minute and a half."
+
+On DRBD: "We want to be certain that we don't wind up in a "split-brain" situation where data is written to both nodes simultaneously since this could result in potentially unrecoverable data corruption."
+
+"When the network froze, many of our fileservers which are intentionally
+located in different racks for redundancy, exceeded their heartbeat timeouts
+and decided that they needed to take control of the fileserver resources. They
+issued STONITH commands to their partner nodes and attempted to take control of
+resources, however some of those commands were not delivered due to the
+compromised network. When the network recovered and the cluster messaging
+between nodes came back, a number of pairs were in a state where both nodes
+expected to be active for the same resource. This resulted in a race where the
+nodes terminated one another and we wound up with both nodes stopped for a
+number of our fileserver pairs."
+
+Over five hours of downtime.
+
+Mark Imbriaco, "Downtime last Saturday"
+https://github.com/blog/1364-downtime-last-saturday

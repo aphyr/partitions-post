@@ -1,0 +1,12 @@
+"PagerDuty’s infrastructure is hosted in three different datacenters (two in
+AWS and another in Linode)"
+
+"At 8:35am, PagerDuty completely loses its ability to dispatch notification, as
+it couldn’t establish quorum due to high network latency. Sev-1 is declared. At
+8:53am, PagerDuty notification dispatch system was able to reach quorum and
+started to process all queued notifications"
+
+18 minutes of downtime for a system explicitly designed for partition tolerance in mind. No data loss, though!
+
+Baskar, Outage Post-Mortem -- April 13, 2013
+http://blog.pagerduty.com/2013/04/outage-post-mortem-april-13-2013/

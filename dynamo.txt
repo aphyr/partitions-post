@@ -1,0 +1,4 @@
+"Although strong consistency provides the application writer a convenient programming model, these systems are limited in scalability and availability [7]. These systems are not capable of handling network partitions because they typically provide strong consistency guarantees."
+
+Amazon's Dynamo
+http://www.allthingsdistributed.com/2007/10/amazons_dynamo.html

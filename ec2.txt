@@ -1,0 +1,36 @@
+"At 12:47 AM PDT on April 21st, a network change was performed as part of our
+normal AWS scaling activities in a single Availability Zone in the US East
+Region. The configuration change was to upgrade the capacity of the primary
+network. During the change, one of the standard steps is to shift traffic off
+of one of the redundant routers in the primary EBS network to allow the upgrade
+to happen. The traffic shift was executed incorrectly and rather than routing
+the traffic to the other router on the primary network, the traffic was routed
+onto the lower capacity redundant EBS network. For a portion of the EBS cluster
+in the affected Availability Zone, this meant that they did not have a
+functioning primary or secondary network because traffic was purposely shifted
+away from the primary network and the secondary network couldn’t handle the
+traffic level it was receiving. As a result, many EBS nodes in the affected
+Availability Zone were completely isolated from other EBS nodes in its cluster.
+Unlike a normal network interruption, this change disconnected both the primary
+and secondary network simultaneously, leaving the affected nodes completely
+isolated from one another."
+
+"RDS multi-AZ deployments provide redundancy by synchronously replicating data
+between two database replicas in different Availability Zones. In the event of
+a failure on the primary replica, RDS is designed to automatically detect the
+disruption and fail over to the secondary replica. Of multi-AZ database
+instances in the US East Region, 2.5% did not automatically failover after
+experiencing “stuck” I/O. The primary cause was that the rapid succession of
+network interruption (which partitioned the primary from the secondary) and
+“stuck” I/O on the primary replica triggered a previously un-encountered bug.
+This bug left the primary replica in an isolated state where it was not safe
+for our monitoring agent to automatically fail over to the secondary replica
+without risking data loss, and manual intervention was required."
+
+"The trigger for this event was a network configuration change."
+
+Consequences: almost 12 hours of EC2 outage; Heroku reported between 7 to 60
+hours of unavailability for clients. RIPPLE EFFECTS.
+
+Summary of the Amazon EC2 and Amazon RDS Service Disruption in the US East Region
+http://aws.amazon.com/message/65648/

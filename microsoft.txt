@@ -1,0 +1,59 @@
+"Data center networks are reliable. We find that overall the data
+center network exhibits high reliability with more than four 9’s
+of availability for about 80% of the links and for about 60% of
+the devices in the network (Section 4.5.3)."
+
+"Network redundancy helps, but it is not entirely effective.
+Ideally, network redundancy should completely mask all fail-
+ures from applications. However, we observe that network re-
+dundancy is only able to reduce the median impact of failures (in
+terms of lost bytes or packets) by up to 40% (Section 5.1)."
+
+~30% of failures impact network traffic; "failures tending to cluster within
+data centers, or even on interfaces of a single device."
+
+1-year probability of a failure impacting network traffic: .095 core, .176 load
+balancer, .095 interconnect between primary/backup switches, .028
+inter-datacenter links.
+
+"However, LBs do not experience the most downtime which
+is dominated instead by ToRs. This is counterintuitive since, as we
+have seen, ToRs have very low failure probabilities. There are three
+factors at play here: (1) LBs are subject to more frequent software
+faults and upgrades (Section 4.7) (2) ToRs are the most prevalent
+device type in the network (Section 2.1), increasing their aggregate
+effect on failure events and downtime (3) ToRs are not a high pri-
+ority component for repair because of in-built failover techniques,
+such as replicating data and compute across multiple racks, that aim
+to maintain high service availability despite failures."
+
+"Inter-data center links take the longest to repair." ~15% of IX link failures
+took more than an hour to repair."
+
+Annualized downtime for links: ~40% inter-datacenter links achieve 4 nines;
+median availability ~99.95. Median availability for most other links: ~99.99%.
+~5% of datacenter-internal links achieved only 99.9% availability. If you get
+that unlucky switch, you can be screwed!
+
+Causes of failures:
+
+Device deployment, UPS maintenance
+OS reboot
+OSPF convergence, UDLD errors, Cabling, Carrier signaling/timing issues
+IOS hotfixes, BIOS upgrade
+PSU/Fan, replacement of line card/chassis/optical adapter
+VPN tunneling, primary-backup failover, IP/MPLS routing
+
+Majority of link downtime caused by HW, net connection, and device deployment/UPS maintenance.
+
+"For example, we observed the same configuration error made on both the
+primary and back up of a network connection because of a typo in the configura
+tion script.  Further, protocol issues such as TCP backoff, timeouts, and
+spanning tree reconfigurations may result in loss of traffic."
+
+"We observe that network redundancies in our system are 40% effective at mask-
+ing the impact of network failures."
+
+Understanding Network Failures in Data Centers:
+Measurement, Analysis, and Implications
+http://research.microsoft.com/en-us/um/people/navendu/papers/sigcomm11netwiser.pdf

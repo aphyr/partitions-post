@@ -1,0 +1,7 @@
+PRIVATE: Still waiting to hear from Camille on which parts of this information I should publish--for now, assume none of it can be shared publically.
+
+"We sustained 5 distinct periods of network partitions at my company this year counting from February 13th. Man, Rackspace kind of sucks. Please don't publicly quote me on this or if you really want to let me see how you're going to phrase it, don't want to be seen as totally trashing our vendors."
+
+"The partitions were of two sorts: between the public network and our internal cloud network, and between the internal network that hosts the physical servers in our env, and that which hosts the cloud network. We run our services on the cloud (and cloud network) so the operation affect in both cases was parts of our website being unavailable. We don't run any major distributed systems that were affected by these partitions, it was mostly just that our frontends couldn't talk to our backends, or our backends couldn't talk to the database at all. There are 124 servers in prod."
+
+"My experience, for what it's worth, is the people least able to spend the time coding to tolerate partitions, startups, are the ones most likely to hit them due to the flakiness of cloud environments. As I mentioned on Twitter, I coded extensively to tolerate datacenter failure at GS, and never actually had any networking issues that I can think of the entire time I worked there that weren't buisness continuity tests."

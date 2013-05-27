@@ -1,0 +1,4 @@
+"Network partitions should be rare but net gear continues to cause more issues than it should. Networking configuration errors, black holes, dropped packets, and brownouts, remain a popular discussion point in post mortems industry-wide."
+
+James Hamilton, "Stonebraker on CAP Theorem and Databases"
+http://perspectives.mvdirona.com/2010/04/07/StonebrakerOnCAPTheoremAndDatabases.aspx

@@ -1,0 +1,4 @@
+"The first deployment of Sherpa supported the timeline-consistency model — namely, all replicas of a record apply all updates in the same order — and has API-level features to enable applications to cope with asynchronous replication. Strict adherence leads to difficult situations under network partitioning or server failures."
+
+Yahoo: Sherpa update
+http://developer.yahoo.com/blogs/ydn/sherpa-7992.html#4
