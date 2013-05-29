@@ -1,3 +1,0 @@
-In my conversations with MongoHQ, they indicated that their physical network
-infrastructure was generally quite reliable, but EC2 partitioned their clusters
-on a "frequent" basis.
