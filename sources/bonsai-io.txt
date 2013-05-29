@@ -1,6 +1,16 @@
-"At approximately 12:05pm PST (UTC-0800), we began receiving alerts of high load on one of our Elasticsearcn nodes. We noted a high level of CPU usage by Elasticsearch on this node, coupled with a higher than normal usage of system memory. Our logs are still unclear on the precise cause of the excess CPU usage, but we were able to rule out other common system causes of high load, such as high disk IO latency."
+"At approximately 12:05pm PST (UTC-0800), we began receiving alerts of high
+load on one of our Elasticsearcn nodes. We noted a high level of CPU usage by
+Elasticsearch on this node, coupled with a higher than normal usage of system
+memory. Our logs are still unclear on the precise cause of the excess CPU
+usage, but we were able to rule out other common system causes of high load,
+such as high disk IO latency."
 
-"Around 1:00pm PST we identified that the previous cluster restart had not been entirely successful. Rather, the cluster had partitioned itself into two clusters. One with half of the nodes present, and another with all but one node. The last node was correctly failing to join either. This is a so-called "split-brain" state, wherein a cluster partitioning event may incorrectly lead one subset of the cluster to elect a new master."
+"Around 1:00pm PST we identified that the previous cluster restart had not been
+entirely successful. Rather, the cluster had partitioned itself into two
+clusters. One with half of the nodes present, and another with all but one
+node. The last node was correctly failing to join either. This is a so-called
+"split-brain" state, wherein a cluster partitioning event may incorrectly lead
+one subset of the cluster to elect a new master."
 
 20 minutes of hard downtime, six hours of degraded service.
 

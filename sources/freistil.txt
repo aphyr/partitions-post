@@ -17,7 +17,8 @@ changes made on node “stor02b” weren’t reflected on “stor02a” and the 
 algorithm built into the Gluster filesystem was not able to resolve this
 inconsistency between the two data sets."
 
-Resolving the inconsistency led to "brief overload of the web nodes because of a short surge in network traffic."
+Resolving the inconsistency led to "brief overload of the web nodes because of
+a short surge in network traffic."
 
 Jochen Lillich, "Post mortem: Network issues last week"
 http://www.freistil.it/2013/02/post-mortem-network-issues-last-week/
