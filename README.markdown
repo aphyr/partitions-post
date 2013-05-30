@@ -39,8 +39,18 @@ comprehensive surveys of availability are few and far between. In this post,
 we'd like to bring these stories together, in an attempt to better understand
 the risks of partitions in production systems.
 
-**PB: do we want to put this somewhere?**
-As James Hamilton, Vice President and Distinguished Engineer on the Amazon Web Services team [attests](http://perspectives.mvdirona.com/2010/04/07/StonebrakerOnCAPTheoremAndDatabases.aspx), “network partitions should be rare but net gear continues to cause more issues than it should.”
+**PB This is a bit combative; what about the following:**
+
+The topic of network partitions in distributed systems is contentious. Many will claim (often loudly) that real-world networks are reliable. In their experience, networks never partition, and modern hardware and network architecture render the risk of communication failures negligible. On the other hand, others subscribe to Peter Deutsch's <a href="https://blogs.oracle.com/jag/resource/Fallacies.html">Fallacies of
+Distributed Computing</a> and will disagree. They'll attest that partitions have and do occur in their systems and that, as James Hamilton of Amazon AWS [neatly summarizes](http://perspectives.mvdirona.com/2010/04/07/StonebrakerOnCAPTheoremAndDatabases.aspx), “network partitions should be rare but net gear continues to cause more issues than it should.” Especially given the <a href="http://henryr.github.io/cap-faq/">consequences of partitions for distributed systems design</a>, who's right?
+
+A key challenge in this debate is the lack of evidence supporting either side (admittedly, the burden of proof lies with the Deutsch camp). This is because partition behavior is extremely challenging to measure. There are *several* measures of latency in IP networks, from switching time to TCP RTT to request latency. **PB: well, can't effective partitions be detected by TCP timeouts?** inconsistency, unavailability, or data loss. We can measure individual link failures reliably, but whether those failures cause a mild increase in latency or cause hosts to lose connectivity on network topology, load, and timing. Still harder to measure are partial failures like bursty network congestion or temporarily stalled applications.
+
+Because few applications can quantitatively evaluate (and alert their operators) about inconsistency and data loss, it often takes a catastrophic failure, such as prolonged service unavailability or widespread data corruption in order to notice a partition. **PB: again, not sure how hard to push here** Even then, owing to the complexity of modern services and networking infrastructure, operators may not be able identify a root cause. And even once someone has identified partition (or, in general, aberrant) behavior, they rarely publicize it. Nobody wants to blame their vendors publicly or admit a loss of customer data if there's a way to handle it privately.
+
+**PB: I like our (this?) final paragraph a lot.**
+
+As a result, much of what we know about the failure modes in real-wold distributed systems is founded on guesswork and rumor. Sysadmins and developers will explain horrifying failure modes to each other over a few beers, but detailed postmortems or comprehensive surveys of availability are few and far between. In this post, as an effort towards a more open and honest discussion of real-world partition behavior, we'd like to bring these stories together.
 
 ## Low-level failures
 
