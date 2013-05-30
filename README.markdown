@@ -44,12 +44,19 @@ As James Hamilton, Vice President and Distinguished Engineer on the Amazon Web S
 
 ## Low-level failures
 
-**PB Question: any reason to keep this separate from WAN failures?**
+**PB Question: any reason to keep this separate from WAN failures? Can we reclassify it**
 
 <div class="accordion">
 <h3>Microsoft Datacenter Study</h3>
 
 Researchers at Microsoft Research <a href="http://research.microsoft.com/en-us/um/people/navendu/papers/sigcomm11netwiser.pdf">studied the behavior</a> of network failures in several of their datacenters. They found an average failure rate of 5.2 devices per day and 40.8 links per day with a median time to repair of approximately five minutes (and up to one week). While the researchers note that correlating link failures and communication partitions is challenging, they estimate a median packet loss of 59,000 packets per failure. Perhaps more concerning is their finding that network redundancy improves median traffic by only 43%; that is, network redundancy does not eliminate many common causes of network failure.
+
+</div>
+
+<div class="accordion">
+<h3>HP Enterprise Managed Networks</h3>
+
+A joint study between researchers at University of California, San Diego and HP Labs <a href="http://www.hpl.hp.com/techreports/2012/HPL-2012-101.pdf">examined</a> the causes and severity of network failures in HP's managed networks by analyzing support ticket data. "Connectivity"-related tickets accounted for 11.4% of support tickets (14% of which were of the highest priority level), with a median incident duration of 2 hours and 45 minutes for the highest priority tickets and and a median duration of 4 hours 18 minutes for all priorities.
 
 </div>
 
