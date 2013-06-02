@@ -41,16 +41,50 @@ the risks of partitions in production systems.
 
 **PB This is a bit combative; what about the following:**
 
-The topic of network partitions in distributed systems is contentious. Many will claim (often loudly) that real-world networks are reliable. In their experience, networks never partition, and modern hardware and network architecture render the risk of communication failures negligible. On the other hand, others subscribe to Peter Deutsch's <a href="https://blogs.oracle.com/jag/resource/Fallacies.html">Fallacies of
-Distributed Computing</a> and will disagree. They'll attest that partitions have and do occur in their systems and that, as James Hamilton of Amazon AWS [neatly summarizes](http://perspectives.mvdirona.com/2010/04/07/StonebrakerOnCAPTheoremAndDatabases.aspx), “network partitions should be rare but net gear continues to cause more issues than it should.” Especially given the <a href="http://henryr.github.io/cap-faq/">consequences of partitions for distributed systems design</a>, who's right?
+The topic of network partitions in distributed systems is contentious. Many
+will claim (often loudly) that real-world networks are reliable. In their
+experience, networks never partition, and modern hardware and network
+architecture render the risk of communication failures negligible. On the other
+hand, others subscribe to Peter Deutsch's <a
+href="https://blogs.oracle.com/jag/resource/Fallacies.html">Fallacies of
+Distributed Computing</a> and will disagree. They'll attest that partitions
+have and do occur in their systems and that, as James Hamilton of Amazon AWS
+[neatly
+summarizes](http://perspectives.mvdirona.com/2010/04/07/StonebrakerOnCAPTheoremAndDatabases.aspx),
+“network partitions should be rare but net gear continues to cause more issues
+than it should.” Especially given the <a
+href="http://henryr.github.io/cap-faq/">consequences of partitions for
+distributed systems design</a>, who's right?
 
-A key challenge in this debate is the lack of evidence supporting either side (admittedly, the burden of proof lies with the Deutsch camp). This is because partition behavior is extremely challenging to measure. There are *several* measures of latency in IP networks, from switching time to TCP RTT to request latency. **PB: well, can't effective partitions be detected by TCP timeouts?** inconsistency, unavailability, or data loss. We can measure individual link failures reliably, but whether those failures cause a mild increase in latency or cause hosts to lose connectivity on network topology, load, and timing. Still harder to measure are partial failures like bursty network congestion or temporarily stalled applications.
+A key challenge in this debate is the lack of evidence supporting either side
+(admittedly, the burden of proof lies with the Deutsch camp). This is because
+partition behavior is extremely challenging to measure. There are *several*
+measures of latency in IP networks, from switching time to TCP RTT to request
+latency. **PB: well, can't effective partitions be detected by TCP timeouts?**
+inconsistency, unavailability, or data loss. We can measure individual link
+failures reliably, but whether those failures cause a mild increase in latency
+or cause hosts to lose connectivity on network topology, load, and timing.
+Still harder to measure are partial failures like bursty network congestion or
+temporarily stalled applications.
 
-Because few applications can quantitatively evaluate (and alert their operators) about inconsistency and data loss, it often takes a catastrophic failure, such as prolonged service unavailability or widespread data corruption in order to notice a partition. **PB: again, not sure how hard to push here** Even then, owing to the complexity of modern services and networking infrastructure, operators may not be able identify a root cause. And even once someone has identified partition (or, in general, aberrant) behavior, they rarely publicize it. Nobody wants to blame their vendors publicly or admit a loss of customer data if there's a way to handle it privately.
+Because few applications can quantitatively evaluate (and alert their
+operators) about inconsistency and data loss, it often takes a catastrophic
+failure, such as prolonged service unavailability or widespread data corruption
+in order to notice a partition. **PB: again, not sure how hard to push here**
+Even then, owing to the complexity of modern services and networking
+infrastructure, operators may not be able identify a root cause. And even once
+someone has identified partition (or, in general, aberrant) behavior, they
+rarely publicize it. Nobody wants to blame their vendors publicly or admit a
+loss of customer data if there's a way to handle it privately.
 
 **PB: I like our (this?) final paragraph a lot.**
 
-As a result, much of what we know about the failure modes in real-wold distributed systems is founded on guesswork and rumor. Sysadmins and developers will explain horrifying failure modes to each other over a few beers, but detailed postmortems or comprehensive surveys of availability are few and far between. In this post, as an effort towards a more open and honest discussion of real-world partition behavior, we'd like to bring these stories together.
+As a result, much of what we know about the failure modes in real-wold
+distributed systems is founded on guesswork and rumor. Sysadmins and developers
+will explain horrifying failure modes to each other over a few beers, but
+detailed postmortems or comprehensive surveys of availability are few and far
+between. In this post, as an effort towards a more open and honest discussion
+of real-world partition behavior, we'd like to bring these stories together.
 
 ## Low-level failures
 
@@ -59,14 +93,30 @@ As a result, much of what we know about the failure modes in real-wold distribut
 <div class="accordion">
 <h3>Microsoft Datacenter Study</h3>
 
-Researchers at Microsoft Research <a href="http://research.microsoft.com/en-us/um/people/navendu/papers/sigcomm11netwiser.pdf">studied the behavior</a> of network failures in several of their datacenters. They found an average failure rate of 5.2 devices per day and 40.8 links per day with a median time to repair of approximately five minutes (and up to one week). While the researchers note that correlating link failures and communication partitions is challenging, they estimate a median packet loss of 59,000 packets per failure. Perhaps more concerning is their finding that network redundancy improves median traffic by only 43%; that is, network redundancy does not eliminate many common causes of network failure.
+Researchers at Microsoft Research <a
+href="http://research.microsoft.com/en-us/um/people/navendu/papers/sigcomm11netwiser.pdf">studied
+the behavior</a> of network failures in several of their datacenters. They
+found an average failure rate of 5.2 devices per day and 40.8 links per day
+with a median time to repair of approximately five minutes (and up to one
+week). While the researchers note that correlating link failures and
+communication partitions is challenging, they estimate a median packet loss of
+59,000 packets per failure. Perhaps more concerning is their finding that
+network redundancy improves median traffic by only 43%; that is, network
+redundancy does not eliminate many common causes of network failure.
 
 </div>
 
 <div class="accordion">
 <h3>HP Enterprise Managed Networks</h3>
 
-A joint study between researchers at University of California, San Diego and HP Labs <a href="http://www.hpl.hp.com/techreports/2012/HPL-2012-101.pdf">examined</a> the causes and severity of network failures in HP's managed networks by analyzing support ticket data. "Connectivity"-related tickets accounted for 11.4% of support tickets (14% of which were of the highest priority level), with a median incident duration of 2 hours and 45 minutes for the highest priority tickets and and a median duration of 4 hours 18 minutes for all priorities.
+A joint study between researchers at University of California, San Diego and HP
+Labs <a
+href="http://www.hpl.hp.com/techreports/2012/HPL-2012-101.pdf">examined</a> the
+causes and severity of network failures in HP's managed networks by analyzing
+support ticket data. "Connectivity"-related tickets accounted for 11.4% of
+support tickets (14% of which were of the highest priority level), with a
+median incident duration of 2 hours and 45 minutes for the highest priority
+tickets and and a median duration of 4 hours 18 minutes for all priorities.
 
 </div>
 
@@ -74,12 +124,20 @@ A joint study between researchers at University of California, San Diego and HP 
 
 <div class="accordion">
 <h3>Google Chubby</h3>
-Google's <a href="http://research.google.com/archive/chubby-osdi06.pdf">paper</a> describing the design and operation of Chubby, their distributed lock manager outlines the root causes of 61 outages over 700 days of operation across several clusters. Of the nine outages that lasted greater than 30 seconds, four were caused by network maintenance and two were caused by "suspected network connectivity problems."
+
+Google's <a
+href="http://research.google.com/archive/chubby-osdi06.pdf">paper</a>
+describing the design and operation of Chubby, their distributed lock manager
+outlines the root causes of 61 outages over 700 days of operation across
+several clusters. Of the nine outages that lasted greater than 30 seconds, four
+were caused by network maintenance and two were caused by "suspected network
+connectivity problems."
 
 </div>
 
 <div class="accordion">
 <h3>Amazon Dynamo</h3>
+
 Amazon's <a href="http://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf">Dynamo paper</a> frequently cites the incidence of partitions as a driving design consideration. Specifically, the authors note that they rejected designs from "traditional replicated relational database systems" because they "are not capable of handling network partitions."
 
 </div>
@@ -118,8 +176,8 @@ down all On Demand services.</b>
 > the loop domain.
 
 According to the BPDU standard, the flood *shouldn't have happened*. Unexpected
-behavior outside the rules of the system caused <b>two hours of total
-service unavailability.</b>
+behavior outside the rules of the system caused <b>two hours of total service
+unavailability.</b>
 
 </div>
 
@@ -179,7 +237,11 @@ fail over on a weekly basis.
 <div class="accordion">
 <h3>PagerDuty</h3>
 
-PagerDuty designed their system to remain available in the face of node, datacenter, or even *provider* failure; their services are replicated between two EC2 datacenters and another in Linode. <a href="http://blog.pagerduty.com/2013/04/outage-post-mortem-april-13-2013/">Degra TODO FINISH THIS BIT
+PagerDuty designed their system to remain available in the face of node,
+datacenter, or even *provider* failure; their services are replicated between
+two EC2 datacenters and another in Linode. <a
+href="http://blog.pagerduty.com/2013/04/outage-post-mortem-april-13-2013/">Degra
+TODO FINISH THIS BIT
 
 </div>
 
@@ -201,9 +263,23 @@ minutes; 95th percentile of 19.9 minutes and 3.7 days).
 
 <div class="accordion">
 <h3>Yahoo! PNUTS/Sherpa</h3>
-<a href="http://www.mpi-sws.org/~druschel/courses/ds/papers/cooper-pnuts.pdf">Yahoo! PNUTS/Sherpa</a> was designed as a distributed database operating out of multiple, geographically distinct sites. Originally, PNUTS supported a strongly consistent "timeline consistency" operation, with one master per data item. However, the developers <a href="http://developer.yahoo.com/blogs/ydn/sherpa-7992.html#4">noted that</a>, in the event of "network partitioning or server failures," this design decision was too restrictive for many applications:
+<a
+href="http://www.mpi-sws.org/~druschel/courses/ds/papers/cooper-pnuts.pdf">Yahoo!
+PNUTS/Sherpa</a> was designed as a distributed database operating out of
+multiple, geographically distinct sites. Originally, PNUTS supported a strongly
+consistent "timeline consistency" operation, with one master per data item.
+However, the developers <a
+href="http://developer.yahoo.com/blogs/ydn/sherpa-7992.html#4">noted that</a>,
+in the event of "network partitioning or server failures," this design decision
+was too restrictive for many applications:
 
- > The first deployment of Sherpa supported the timeline-consistency model — namely, all replicas of a record apply all updates in the same order — and has API-level features to enable applications to cope with asynchronous replication. Strict adherence leads to difficult situations under network partitioning or server failures. These can be partially addressed with override procedures and local data replication, but in many circumstances, applications need a relaxed approach."
+> The first deployment of Sherpa supported the timeline-consistency model —
+> namely, all replicas of a record apply all updates in the same order — and
+> has API-level features to enable applications to cope with asynchronous
+> replication. Strict adherence leads to difficult situations under network
+> partitioning or server failures. These can be partially addressed with
+> override procedures and local data replication, but in many circumstances,
+> applications need a relaxed approach."
 
 </div>
 
@@ -242,15 +318,34 @@ unavailability.
 <div class="accordion">
 <h3>Global BGP Outages</h3>
 
-There have been several global Internet outages related to BGP misconfiguration. Notably, in 2008, Pakistan Telecom, responding to a government edict to block YouTube.com, incorrectly advertised its (blocked) route to other provides, which hijacked traffic from the site and <a href="http://news.cnet.com/8301-10784_3-9878655-7.html">briefly rendered it unreachable</a>. In 2010, a group of Duke University researchers achieved similar effect by <a href="http://www.merit.edu/mail.archives/nanog/msg11505.html">testing</a> an experimental flag in the BGP protocol. Similar incidents have occured <a href="http://www.renesys.com/2006/01/coned-steals-the-net/">in 2006</a> (knocking sites like Martha Stewart Living and The New York Times offline), <a href="http://www.renesys.com/2005/12/internetwide-nearcatastrophela/">in 2005</a> (where a misconfiguration in Turkey attempted in a redirect for the *entire* internet), and <a href="http://merit.edu/mail.archives/nanog/1997-04/msg00380.html">in 1997</a>.
+There have been several global Internet outages related to BGP
+misconfiguration. Notably, in 2008, Pakistan Telecom, responding to a
+government edict to block YouTube.com, incorrectly advertised its (blocked)
+route to other provides, which hijacked traffic from the site and <a
+href="http://news.cnet.com/8301-10784_3-9878655-7.html">briefly rendered it
+unreachable</a>. In 2010, a group of Duke University researchers achieved
+similar effect by <a
+href="http://www.merit.edu/mail.archives/nanog/msg11505.html">testing</a> an
+experimental flag in the BGP protocol. Similar incidents have occured <a
+href="http://www.renesys.com/2006/01/coned-steals-the-net/">in 2006</a>
+(knocking sites like Martha Stewart Living and The New York Times offline), <a
+href="http://www.renesys.com/2005/12/internetwide-nearcatastrophela/">in
+2005</a> (where a misconfiguration in Turkey attempted in a redirect for the
+*entire* internet), and <a
+href="http://merit.edu/mail.archives/nanog/1997-04/msg00380.html">in 1997</a>.
 
 </div>
 
 ## Misconfiguration and Bugs
 
 <div class="accordion">
-<h3>Juniper Routing Bug</h3>
-The software running inside network hardware (i.e., firmware) is subject to bugs just like the rest of computer software. A bug in a router upgrade in Juniper Networks's routers <a href="http://www.eweek.com/c/a/IT-Infrastructure/Bug-in-Juniper-Router-Firmware-Update-Causes-Massive-Internet-Outage-709180/">caused outages</a> in Level 3 Communications's networking backbone. This subsequently knocked services like Time Warner Cable and RIM BlackBerry, and several UK internet service providers offline.
+<h3>Juniper Routing Bug</h3> The software running inside network hardware
+(i.e., firmware) is subject to bugs just like the rest of computer software. A
+bug in a router upgrade in Juniper Networks's routers <a
+href="http://www.eweek.com/c/a/IT-Infrastructure/Bug-in-Juniper-Router-Firmware-Update-Causes-Massive-Internet-Outage-709180/">caused
+outages</a> in Level 3 Communications's networking backbone. This subsequently
+knocked services like Time Warner Cable and RIM BlackBerry, and several UK
+internet service providers offline.
 
 </div>
 
@@ -259,7 +354,8 @@ The software running inside network hardware (i.e., firmware) is subject to bugs
 <div class="accordion">
 <h3>Bonsai.io</h3>
 
-Not all partitions involve the network hardware directly but can surface due to software inability to process messages. Bonsai.io <a
+Not all partitions involve the network hardware directly but can surface due to
+software inability to process messages. Bonsai.io <a
 href="http://www.bonsai.io/blog/2013/03/05/outage-post-mortem">discovered</a>
 high CPU use and load averages on an ElasticSearch node. They restarted the
 cluster, but it failed to converge, partitioning itself into two independent
