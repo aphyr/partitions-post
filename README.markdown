@@ -739,3 +739,16 @@ they note in the postmortem:
 Distributed systems are *hard*.
 
 </div>
+
+<div class="accordion">
+<h3>Mystery RabbitMQ partitions</h3>
+
+Sometimes, nobody knows why the system partitioned. This <a
+href="http://serverfault.com/questions/497308/rabbitmq-network-partition-error">RabbitMQ
+failure</a> seems like one of those cases: few retransmits, no large gaps
+between messages, and no clear loss of connectivity between nodes. Upping the
+partition detection timeout to 2 minutes reduced the frequency of partitions,
+but didn't prevent them altogether
+. 
+
+</div>
