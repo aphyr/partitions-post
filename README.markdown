@@ -88,7 +88,8 @@ of real-world partition behavior, we'd like to bring these stories together.
 
 ## Low-level failures
 
-**PB Question: any reason to keep this separate from WAN failures? Can we reclassify it**
+**PB Question: any reason to keep this separate from WAN failures? Can we
+reclassify it**
 
 <div class="accordion">
 <h3>Microsoft Datacenter Study</h3>
@@ -157,7 +158,12 @@ repairing a network partition".
 <div class="accordion">
 <h3>Amazon Dynamo</h3>
 
-Amazon's <a href="http://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf">Dynamo paper</a> frequently cites the incidence of partitions as a driving design consideration. Specifically, the authors note that they rejected designs from "traditional replicated relational database systems" because they "are not capable of handling network partitions."
+Amazon's <a
+href="http://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf">Dynamo
+paper</a> frequently cites the incidence of partitions as a driving design
+consideration. Specifically, the authors note that they rejected designs from
+"traditional replicated relational database systems" because they "are not
+capable of handling network partitions."
 
 </div>
 
@@ -247,7 +253,8 @@ of a short surge in network traffic".
 
 ## Internal partitions
 
-**PB note: should we explain what we mean by "internal?" Should we pair this with the earlier stuff from Microsoft?**
+**PB note: should we explain what we mean by "internal?" Should we pair this
+with the earlier stuff from Microsoft?**
 
 <div class="accordion">
 <h3>RelateIQ</h3>
@@ -322,7 +329,8 @@ dispatching messages entirely.
 
 Even though PagerDuty's infrastructure was designed with partition tolerance in
 mind, including the loss of an entire datacenter, correlated failures in two
-Amazon AZs caused 18 minutes of unavailability, dropping inbound API requests and delaying queued pages until quorum was re-established.
+Amazon AZs caused 18 minutes of unavailability, dropping inbound API requests
+and delaying queued pages until quorum was re-established.
 
 </div>
 
@@ -395,7 +403,8 @@ FlowSpec protocol propagated that rule to all CloudFlare edge routers, where:
 > routers encountered the rule and then proceeded to consume all their RAM
 > until they crashed.
 
-Recovering from the failure was more complicated by routers which failed to reboot automatically, and inaccessible management ports.
+Recovering from the failure was more complicated by routers which failed to
+reboot automatically, and inaccessible management ports.
 
 > Even though some data centers came back online initially, they fell back over
 > again because all the traffic across our entire network hit them and
@@ -450,7 +459,9 @@ internet service providers offline.
 
 On April 21st, 2011, <a href="http://aws.amazon.com/message/65648/">Amazon's
 Web Services</a> went down for over 12 hours, causing outages for hundreds of
-high-profile web sites to go offline. As a part of normal AWS scaling activities, Amazon engineers shifted traffic away from a router in the Elastic Block Store network in single US-East AZ.
+high-profile web sites to go offline. As a part of normal AWS scaling
+activities, Amazon engineers shifted traffic away from a router in the Elastic
+Block Store network in single US-East AZ.
 
 > The traffic shift was executed incorrectly and rather than routing the
 > traffic to the other router on the primary network, the traffic was routed
@@ -466,7 +477,8 @@ high-profile web sites to go offline. As a part of normal AWS scaling activities
 
 The partition coupled with aggressive failure-recovery code caused a mirroring
 storm, which led to network congestion and triggered a previously unknown race
-condition in EBS. EC2 was unavailable for roughly 12 hours, but EBS was down or degraded for over 80 hours.
+condition in EBS. EC2 was unavailable for roughly 12 hours, but EBS was down or
+degraded for over 80 hours.
 
 The EBS failure also caused an outage in Amazon's Relational Database Service.
 When one AZ fails, RDS is designed to fail over to a different AZ. However,
@@ -517,7 +529,9 @@ consequences.
 <h3>Github</h3>
 
 Github relies heavily on Pacemaker and Heartbeat; programs which coordinate
-cluster resources between nodes. They use Percona Replication Manager, a resource agent for Pacemaker, to replicate their MySQL database between three nodes.
+cluster resources between nodes. They use Percona Replication Manager, a
+resource agent for Pacemaker, to replicate their MySQL database between three
+nodes.
 
 On September 10th, 2012, a routine database migration caused unexpectedly high
 load on the MySQL primary. Percona Replication Manager, unable to perform
@@ -528,7 +542,10 @@ to the original primary. The operations team put Pacemaker into
 maintenance-mode, temporarily halting automatic failover. The site appeared to
 recover.
 
-The next morning, the operations team discovered that the standby MySQL node was no longer replicating changes from the primary. Operations decided to disable Pacemaker's maintenance mode to allow the replication manager to fix the problem.
+The next morning, the operations team discovered that the standby MySQL node
+was no longer replicating changes from the primary. Operations decided to
+disable Pacemaker's maintenance mode to allow the replication manager to fix
+the problem.
 
 > Upon attempting to disable maintenance-mode, a Pacemaker segfault occurred
 > that resulted in a cluster state partition. After this update, two nodes
@@ -548,7 +565,10 @@ The next morning, the operations team discovered that the standby MySQL node was
 > drift, taking down all production database access and thus all access to
 > github.com.
 
-The partition caused inconsistency in the MySQL database--both internally and between MySQL and other datastores, like Redis. Because foreign key relationships were no longer valid, Github showed private repositories to the wrong user's dashboards, and incorrectly routed some newly created repos.
+The partition caused inconsistency in the MySQL database--both internally and
+between MySQL and other datastores, like Redis. Because foreign key
+relationships were no longer valid, Github showed private repositories to the
+wrong user's dashboards, and incorrectly routed some newly created repos.
 
 Github thought carefully about their infrastructure design, and were still
 surprised by a complex interaction of partial failures and software bugs. As
