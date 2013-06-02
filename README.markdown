@@ -314,10 +314,12 @@ This <a
 href="http://readlist.com/lists/lists.linux-ha.org/linux-ha/6/31964.html">post
 to Linux-HA details a long-running partition between two heartbeat pairs</a>,
 in which two Linode VMs have each declared the other dead and claimed the
-shared IP for themselves. Successive posts suggest that emails failed to
-dispatch due to DNS resolution failure, and nodes reporting "network
-unreachable". In this case the impact appears to have been minimal, in part
-because the split-brained application was a mostly-stateless proxy.
+shared IP for themselves. Successive posts suggest further network problems:
+emails failed to dispatch due to DNS resolution failure, and nodes reported
+"network unreachable". In this case the impact appears to have been minimal, in
+part because the split-brained application was a mostly-stateless proxy.
+
+</div>
 
 <div class="accordion">
 <h3>Github</h3>
