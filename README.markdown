@@ -375,6 +375,21 @@ causing significant data loss.
 </div>
 
 <div class="accordion">
+<h3>EC2 instability causing MongoDB and ElasticSearch unavailability</h3>
+
+Network disruptions in EC2 are well-known, but unevenly distributed. For
+instance, <a
+href="https://forums.aws.amazon.com/thread.jspa?messageID=454155">this report
+of a total partition between the frontend and backend stacks</a> states that
+the web servers lose their connections to all backend instances for a few
+seconds, several times a month. Even though the disruptions were short, cluster
+convergence resulted in 30-45 minute outages and a corrupted index for
+ElasticSearch. As problems escalated, the outages occurred "2 to 4 times a
+day".
+ 
+</div>
+
+<div class="accordion">
 <h3>ElasticSearch discovery failure</h3>
 
 <a
@@ -457,6 +472,7 @@ company wasn't running any significant distributed systems between those
 networks, there were no major inconsistencies.
 
 </div>
+
 
 <div class="accordion">
 <h3>CENIC Study</h3>
