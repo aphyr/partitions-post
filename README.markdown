@@ -278,6 +278,17 @@ fail over on a weekly basis.
 </div>
 
 <div class="accordion">
+<h3>A Novell Cluster split-brain</h3>
+
+Intermittent failures can lead to long outages. In this <a
+href="http://novell.support.cluster-services.free-usenet.eu/Split-Brain-Condition_T31677168_S1">Usenet
+post to novell.support.cluster-services</a>, an admin reports their two-node
+failover cluster running Novell NetWare experienced transient network outages.
+The secondary node eventually killed itself, and the primary (though still
+running) was no longer reachable by other hosts on the network. The post goes
+on to detail a series of network partition events correlated with backup jobs.
+
+<div class="accordion">
 <h3>Github</h3>
 
 On <a href="https://github.com/blog/1364-downtime-last-saturday">December 22nd,
