@@ -322,6 +322,18 @@ part because the split-brained application was a mostly-stateless proxy.
 </div>
 
 <div class="accordion">
+<h3>VoltDB split-brain on EC2</h3>
+
+One VoltDB user reports <a
+href="https://forum.voltdb.com/showthread.php?552-Nodes-stop-talking-to-each-other-and-form-independent-clusters">regular
+network failures causing nodes to causally diverge</a>, but also reported that
+their network logs included no dropped packets. Because this cluster had not
+enabled split-brain detection, both nodes ran as causally isolated primaries,
+causing significant data loss. 
+
+</div>
+
+<div class="accordion">
 <h3>Github</h3>
 
 On <a href="https://github.com/blog/1364-downtime-last-saturday">December 22nd,
