@@ -289,6 +289,25 @@ running) was no longer reachable by other hosts on the network. The post goes
 on to detail a series of network partition events correlated with backup jobs.
 
 <div class="accordion">
+<h3>CityCloud GlusterFS partitions</h3>
+
+After a scheduled upgrade, <a
+href="https://www.citycloud.eu/cloud-computing/post-mortem/">CityCloud noticed
+unexpected network failures in two distinct GlusterFS pairs</a>, followed by a
+third. Suspecting link aggregation, CityCloud disabled the feature on their
+switches and allowed self-heal operations to proceed.
+
+Roughly 12 hours later, the network failures returned on one node. CityCloud
+identified a particular driver issue and updated the downed node, returning
+service. However, the outage resulted in data inconsistency between GlusterFS
+pairs:
+
+> As the servers lost storage abruptly there were certain types of Gluster
+> issues where files did not match each other on the two nodes in each storage
+> pair. There were also some cases of data corruption in the VMs filesystems
+> due to VMs going down in an uncontrolled way.
+
+<div class="accordion">
 <h3>Github</h3>
 
 On <a href="https://github.com/blog/1364-downtime-last-saturday">December 22nd,
