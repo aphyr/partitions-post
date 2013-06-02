@@ -334,6 +334,20 @@ causing significant data loss.
 </div>
 
 <div class="accordion">
+<h3>ElasticSearch discovery failure</h3>
+
+<a
+href="http://elasticsearch-users.115913.n3.nabble.com/EC2-discovery-leads-to-two-masters-td3239318.html">Another
+EC2 split-brain</a>: a two-node cluster on "roughly 1 out of 10 startups"
+failed to converge when discovery messages took longer than three seconds to
+complete. As a result, both nodes would start as masters with the same cluster
+name. Since ElasticSearch doesn't demote primaries automatically, split-brain
+persisted until administrators intervened. Upping the discovery timeout to 15
+seconds resolved the issue.
+
+</div>
+
+<div class="accordion">
 <h3>Github</h3>
 
 On <a href="https://github.com/blog/1364-downtime-last-saturday">December 22nd,
