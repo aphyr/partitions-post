@@ -136,6 +136,25 @@ connectivity problems."
 </div>
 
 <div class="accordion">
+<h3>Google's Design Lessons from Distributed Systems</h3>
+
+In <a
+href="http://www.cs.cornell.edu/projects/ladis2009/talks/dean-keynote-ladis2009.pdf">Design
+Lessons and Advice from Building Large Scale Distributed Systems</a>, Jeff Dean
+suggests that a typical first year for a new Google cluster involves:
+
+- 5 racks going wonky (40-80 machines seeing 50% packet loss)
+- 8 network maintenances (4 might cause ~30-minute random connectivity losses)
+- 3 router failures (have to immediately pull traffic for an hour)
+
+While Google doesn't tell us much about the application-level consequences of
+their network partitions, Lessons From Distributed Systems suggests it is a
+significant concern, citing the challenge of "[e]asy-to-use abstractions for
+resolving conflicting updates to multiple versions of a piece of state" as
+being useful for "reconciling replicated state in different data centers after
+repairing a network partition".
+
+<div class="accordion">
 <h3>Amazon Dynamo</h3>
 
 Amazon's <a href="http://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf">Dynamo paper</a> frequently cites the incidence of partitions as a driving design consideration. Specifically, the authors note that they rejected designs from "traditional replicated relational database systems" because they "are not capable of handling network partitions."
@@ -178,6 +197,25 @@ down all On Demand services.</b>
 According to the BPDU standard, the flood *shouldn't have happened*. Unexpected
 behavior outside the rules of the system caused <b>two hours of total service
 unavailability.</b>
+
+</div>
+
+<div class="accordion">
+<h3>Github</h3>
+
+In an effort to address high latencies caused by a daisy-chained network
+topology, Github <a
+href="https://github.com/blog/1346-network-problems-last-friday">installed a
+set of aggregation switches</a> in their datacenter. Despite a redundant
+network, the installation process resulted in bridge loops, and switches
+disabled links to prevent failure. This problem was quickly resolved, but later
+investigation revealed that many interfaces were still pegged at 100% capacity.
+
+While investigating that problem, a switch misconfiguration resulted in an
+automated fault detector destroying *all* links when an individual link was
+disabled, which caused 18 minutes of hard downtime. The problem was later
+traced to a firmware bug preventing switches from updating their MAC address
+caches correctly, forcing them to broadcast most packets to every interface. 
 
 </div>
 
@@ -232,6 +270,41 @@ fail over on a weekly basis.
 
 </div>
 
+<div class="accordion">
+<h3>Github</h3>
+
+On <a href="https://github.com/blog/1364-downtime-last-saturday">December 22nd,
+2012</a>, a planned software update on an aggregation switch caused some mild
+instability during the maintenance window. In order to collect diagnostic
+information about the instability, the network vendor killed a particular
+software agent running on one of the aggregation switches.
+
+Github's aggregation switches are clustered in pairs using a feature called
+MLAG, which presents two physical switches as a single layer 2 device. The MLAG
+failure detection protocol relies on *both* ethernet link state *and* a logical
+heartbeat message exchanged between nodes. When the switch agent was killed, it
+was *unable* to shut down the ethernet link. Unlucky timing confused the MLAG
+takeover, preventing the still-healthy agg switch from handling link
+aggregation, spanning-tree, and other L2 protocols as normal. This forced a
+spanning-tree leader election and reconvergence for all links, *blocking all
+traffic between access switches for 90 seconds*.
+
+The 90-second network partition caused fileservers using Pacemaker and DRBD for
+HA failover to declare each other dead, and to issue STONITH (Shoot The Other
+Node In The Head) messages to one another. The network partition delayed
+delivery of those messages, causing some fileserver pairs to believe they were
+*both* active. When the network recovered, both nodes shot each other at the
+same time. With both nodes dead, files belonging to that pair were unavailable.
+
+To prevent filesystem corruption, DRBD requires that administrators ensure the
+original primary node is still the primary node before resuming replication.
+For pairs where both nodes were primary, the ops team had to examine log files
+or bring the node online in isolation to determine its state. Recovering those
+downed fileserver pairs took five hours, during which Github was significantly
+degraded.
+
+</div>
+
 ## WAN failures
 
 <div class="accordion">
@@ -239,9 +312,30 @@ fail over on a weekly basis.
 
 PagerDuty designed their system to remain available in the face of node,
 datacenter, or even *provider* failure; their services are replicated between
-two EC2 datacenters and another in Linode. <a
-href="http://blog.pagerduty.com/2013/04/outage-post-mortem-april-13-2013/">Degra
-TODO FINISH THIS BIT
+two EC2 availability zones *in separate regions* and another in Linode. On
+April 13, 2013, <a
+href="http://blog.pagerduty.com/2013/04/outage-post-mortem-april-13-2013/">an
+AWS peering point in northern California degraded</a>, causing connectivity
+issues for one of PagerDuty's nodes. As latencies between AWS availability
+zones rose, the notification dispatch system lost quorum and stopped
+dispatching messages entirely.
+
+Even though PagerDuty's infrastructure was designed with partition tolerance in
+mind, including the loss of an entire datacenter, correlated failures in two
+Amazon AZs caused 18 minutes of unavailability, dropping inbound API requests and delaying queued pages until quorum was re-established.
+
+</div>
+
+<div class="accordion">
+<h3>An anonymous hosting provider</h3>
+
+One company running 100-200 nodes on a major hosting provider reports that in a
+90-day period their provider's network experienced five distinct partitions.
+Some cut off connectivity between the provider's cloud network and the public
+internet, and others separated the cloud network from the provider's internal
+managed-hosting network. The failures caused unavailability, but because this
+company wasn't running any significant distributed systems between those
+networks, there were no major inconsistencies.
 
 </div>
 
@@ -339,9 +433,11 @@ href="http://merit.edu/mail.archives/nanog/1997-04/msg00380.html">in 1997</a>.
 ## Misconfiguration and Bugs
 
 <div class="accordion">
-<h3>Juniper Routing Bug</h3> The software running inside network hardware
-(i.e., firmware) is subject to bugs just like the rest of computer software. A
-bug in a router upgrade in Juniper Networks's routers <a
+<h3>Juniper Routing Bug</h3>
+
+The software running inside network hardware (i.e., firmware) is subject to
+bugs just like the rest of computer software. A bug in a router upgrade in
+Juniper Networks's routers <a
 href="http://www.eweek.com/c/a/IT-Infrastructure/Bug-in-Juniper-Router-Firmware-Update-Causes-Massive-Internet-Outage-709180/">caused
 outages</a> in Level 3 Communications's networking backbone. This subsequently
 knocked services like Time Warner Cable and RIM BlackBerry, and several UK
@@ -349,13 +445,51 @@ internet service providers offline.
 
 </div>
 
+<div class="accordion">
+<h3>AWS EBS outage</h3>
+
+On April 21st, 2011, <a href="http://aws.amazon.com/message/65648/">Amazon's
+Web Services</a> went down for over 12 hours, causing outages for hundreds of
+high-profile web sites to go offline. As a part of normal AWS scaling activities, Amazon engineers shifted traffic away from a router in the Elastic Block Store network in single US-East AZ.
+
+> The traffic shift was executed incorrectly and rather than routing the
+> traffic to the other router on the primary network, the traffic was routed
+> onto the lower capacity redundant EBS network. For a portion of the EBS
+> cluster in the affected Availability Zone, this meant that they did not have
+> a functioning primary or secondary network because traffic was purposely
+> shifted away from the primary network and the secondary network couldn’t
+> handle the traffic level it was receiving. As a result, many EBS nodes in the
+> affected Availability Zone were completely isolated from other EBS nodes in
+> its cluster.  Unlike a normal network interruption, this change disconnected
+> both the primary and secondary network simultaneously, leaving the affected
+> nodes completely isolated from one another.
+
+The partition coupled with aggressive failure-recovery code caused a mirroring
+storm, which led to network congestion and triggered a previously unknown race
+condition in EBS. EC2 was unavailable for roughly 12 hours, but EBS was down or degraded for over 80 hours.
+
+The EBS failure also caused an outage in Amazon's Relational Database Service.
+When one AZ fails, RDS is designed to fail over to a different AZ. However,
+2.5% of multi-AZ databases in US-East failed to fail over due to "stuck" IO.
+
+> The primary cause was that the rapid succession of network interruption
+> (which partitioned the primary from the secondary) and “stuck” I/O on the
+> primary replica triggered a previously un-encountered bug.  This bug left the
+> primary replica in an isolated state where it was not safe for our monitoring
+> agent to automatically fail over to the secondary replica without risking
+> data loss, and manual intervention was required."
+
+The multi-AZ correlated failure caused widespread outages for clients relying
+on AWS. <a href="https://status.heroku.com/incidents/151">Heroku reported</a>
+between 16 and 60 hours of unavailability for their users' databases.
+
 ## CPU and GC pauses
 
 <div class="accordion">
 <h3>Bonsai.io</h3>
 
-Not all partitions involve the network hardware directly but can surface due to
-software inability to process messages. Bonsai.io <a
+Not all partitions involve the network hardware directly; some are caused by
+the software's inability to process messages. Bonsai.io <a
 href="http://www.bonsai.io/blog/2013/03/05/outage-post-mortem">discovered</a>
 high CPU use and load averages on an ElasticSearch node. They restarted the
 cluster, but it failed to converge, partitioning itself into two independent
@@ -376,5 +510,54 @@ improper value of `zen.minimum_master_nodes`, ElasticSearch was able to elect
 two simultaneous primaries, leading to inconsistency and downtime. Configuring
 distributed systems is difficult, and benign omissions can lead to serious
 consequences.
+
+</div>
+
+<div class="accordion">
+<h3>Github</h3>
+
+Github relies heavily on Pacemaker and Heartbeat; programs which coordinate
+cluster resources between nodes. They use Percona Replication Manager, a resource agent for Pacemaker, to replicate their MySQL database between three nodes.
+
+On September 10th, 2012, a routine database migration caused unexpectedly high
+load on the MySQL primary. Percona Replication Manager, unable to perform
+health checks against the busy MySQL instance, decided the primary was down and
+promoted a secondary. The secondary had a cold cache and performed poorly.
+Normal query load on the node caused it to slow down, and Percona failed *back*
+to the original primary. The operations team put Pacemaker into
+maintenance-mode, temporarily halting automatic failover. The site appeared to
+recover.
+
+The next morning, the operations team discovered that the standby MySQL node was no longer replicating changes from the primary. Operations decided to disable Pacemaker's maintenance mode to allow the replication manager to fix the problem.
+
+> Upon attempting to disable maintenance-mode, a Pacemaker segfault occurred
+> that resulted in a cluster state partition. After this update, two nodes
+> (I'll call them 'a' and 'b') rejected most messages from the third node
+> ('c'), while the third node rejected most messages from the other two.
+> Despite having configured the cluster to require a majority of machines to
+> agree on the state of the cluster before taking action, two simultaneous
+> master election decisions were attempted without proper coordination. In the
+> first cluster, master election was interrupted by messages from the second
+> cluster and MySQL was stopped.
+
+> In the second, single-node cluster, node 'c' was elected at 8:19 AM, and any
+> subsequent messages from the other two-node cluster were discarded. As luck
+> would have it, the 'c' node was the node that our operations team previously
+> determined to be out of date. We detected this fact and powered off this
+> out-of-date node at 8:26 AM to end the partition and prevent further data
+> drift, taking down all production database access and thus all access to
+> github.com.
+
+The partition caused inconsistency in the MySQL database--both internally and between MySQL and other datastores, like Redis. Because foreign key relationships were no longer valid, Github showed private repositories to the wrong user's dashboards, and incorrectly routed some newly created repos.
+
+Github thought carefully about their infrastructure design, and were still
+surprised by a complex interaction of partial failures and software bugs. As
+they note in the postmortem:
+
+> ... if any member of our operations team had been asked if the failover
+> should have been performed, the answer would have been a resounding
+> <b>no</b>.
+
+Distributed systems are *hard*.
 
 </div>
