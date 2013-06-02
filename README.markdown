@@ -319,6 +319,21 @@ fail over on a weekly basis.
 </div>
 
 <div class="accordion">
+<h3>RabbitMQ and ElasticSearch on Windows Azure</h3>
+
+There are a few <a
+href="http://social.msdn.microsoft.com/Forums/en-US/WAVirtualMachinesforWindows/thread/b261e1aa-5ec4-42fc-80ef-5b50a0a00618">scattered
+reports of Windows Azure partitions, such as <a
+href="http://rabbitmq.1065348.n5.nabble.com/Instable-HA-cluster-td24690.html">this
+account</a> of a RabbitMQ cluster which entered split-brain on a weekly basis.
+We also have reports of <a
+href="https://groups.google.com/forum/?fromgroups#!topic/elasticsearch/muZtKij3nUw">ElasticSearch
+split-brain</a>, but reports about Azure's network reliability are harder to
+come by than EC2 at this time.
+
+</div>
+
+<div class="accordion">
 <h3>A Novell Cluster split-brain</h3>
 
 Intermittent failures can lead to long outages. In this <a
@@ -644,8 +659,7 @@ Stop-the-world garbage collection can force application latencies on the order
 of seconds to minutes. As Searchbox.io <a
 href="http://blog.searchbox.io/blog/2013/03/03/january-postmortem">observed</a>,
 GC pressure in an ElasticSearch cluster caused secondary nodes to declare a
-primary dead and to attempt a new election. Because their configuration used an
-improper value of `zen.minimum_master_nodes`, ElasticSearch was able to elect
+primary dead and to attempt a new election. Because their configuration used a low value of `zen.minimum_master_nodes`, ElasticSearch was able to elect
 two simultaneous primaries, leading to inconsistency and downtime. Configuring
 distributed systems is difficult, and benign omissions can lead to serious
 consequences.
