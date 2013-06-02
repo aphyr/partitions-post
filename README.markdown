@@ -344,6 +344,23 @@ The secondary node eventually killed itself, and the primary (though still
 running) was no longer reachable by other hosts on the network. The post goes
 on to detail a series of network partition events correlated with backup jobs.
 
+</div>
+
+<div class="accordion">
+<h3>Mnesia on EC2</h3>
+
+EC2 outages can leave two nodes connected to the internet, but unable to see
+each other. This type of partition is especially dangerous, as writes to both
+sides of a partitioned cluster can cause inconsistency and lost data. That's
+exactly what happened to <a
+href="http://dukesoferl.blogspot.com/2008/03/network-partition-oops.html?m=1">this
+Mnesia cluster</a>, which diverged overnight. Their state wasn't critical, so
+the operations team just nuked one side of the cluster. They conclude: "the
+experience has convinced us that we need to prioritize up our network partition
+recovery strategy".
+
+</div>
+
 <div class="accordion">
 <h3>CityCloud GlusterFS partitions</h3>
 
