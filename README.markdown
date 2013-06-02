@@ -365,6 +365,18 @@ and delaying queued pages until quorum was re-established.
 </div>
 
 <div class="accordion">
+<h3>Pacemaker/Heartbeat split-brain</h3>
+
+This <a
+href="http://readlist.com/lists/lists.linux-ha.org/linux-ha/6/31964.html">post
+to Linux-HA details a long-running partition between two heartbeat pairs</a>,
+in which two Linode VMs have each declared the other dead and claimed the
+shared IP for themselves. Successive posts suggest that emails failed to
+dispatch due to DNS resolution failure, and nodes reporting "network
+unreachable". In this case the impact appears to have been minimal, in part
+because the split-brained application was a mostly-stateless proxy.
+
+<div class="accordion">
 <h3>An anonymous hosting provider</h3>
 
 One company running 100-200 nodes on a major hosting provider reports that in a
