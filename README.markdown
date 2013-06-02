@@ -251,6 +251,25 @@ of a short surge in network traffic".
 
 </div>
 
+<div class="accordion">
+<h3>BNX2 drivers</h3>
+
+Unreliable NIC hardware or drivers are implicated in a broad array of
+partitions. <a href="http://www.spinics.net/lists/netdev/msg210485.html">Marc
+Donges and Michael Chan</a> bring us a thrilling report of the MCM5709 chipset
+abruptly dropping inbound, *but not outbound* packets to a machine. Because
+inbound packets were dropped, the node was unable to service requests. Because
+it could still send heartbeats to its hot spare via keepalived, the hot spare
+considered it alive and refused to take over. The service was unavailable for
+five hours, and did not recover without a reboot.
+
+Sven Ulland <a
+href="http://www.spinics.net/lists/netdev/msg210491.html">follows up</a>,
+reporting the same symptoms with the BCM5709S chipset on Linux
+2.6.32-41squeeze2. Despite pulling commits from mainline which supposedly fixed
+a similar set of issues with the bnx2 driver, they were unable to resolve the
+issue until 2.6.38.
+
 ## Internal partitions
 
 **PB note: should we explain what we mean by "internal?" Should we pair this
