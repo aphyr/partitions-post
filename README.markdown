@@ -436,6 +436,19 @@ seconds resolved the issue.
 </div>
 
 <div class="accordion">
+<h3>DRBD split-brain</h3>
+
+When a two-node cluster partitions, there are no cases in which a node can
+reliably declare itself to be the primary. When this happens to <a
+href="http://serverfault.com/questions/485545/dual-primary-ocfs2-drbd-encountered-split-brain-is-recovery-always-going-to-be">a
+DRBD filesystem</a>, both nodes can remain online and accepting writes, leading
+to divergent filesystem-level changes. The only real option for resolving these
+kinds of conflicts is to discard all writes not made to a selected component of
+the cluster.
+
+</div>
+
+<div class="accordion">
 <h3>Github</h3>
 
 On <a href="https://github.com/blog/1364-downtime-last-saturday">December 22nd,
