@@ -256,7 +256,7 @@ of a short surge in network traffic".
 
 Unreliable NIC hardware or drivers are implicated in a broad array of
 partitions. <a href="http://www.spinics.net/lists/netdev/msg210485.html">Marc
-Donges and Michael Chan</a> bring us a thrilling report of the MCM5709 chipset
+Donges and Michael Chan</a> bring us a thrilling report of the BCM5709 chipset
 abruptly dropping inbound, *but not outbound* packets to a machine. Because
 inbound packets were dropped, the node was unable to service requests. Because
 it could still send heartbeats to its hot spare via keepalived, the hot spare
@@ -269,6 +269,28 @@ reporting the same symptoms with the BCM5709S chipset on Linux
 2.6.32-41squeeze2. Despite pulling commits from mainline which supposedly fixed
 a similar set of issues with the bnx2 driver, they were unable to resolve the
 issue until 2.6.38.
+
+The bnx2 driver could also cause transient or flapping network failures, as
+described in this <a
+href="http://elasticsearch-users.115913.n3.nabble.com/Cluster-Split-Brain-td3333510.html">ElasticSearch
+split brain report</a>.
+
+Since Dell shipped a large number of servers with the Broadcom BCM5709, the
+impact of these firmware bugs was widely felt. For instance, the 5709 had a bug
+in its <a
+href="http://monolight.cc/2011/08/flow-control-flaw-in-broadcom-bcm5709-nics-and-bcm56xxx-switches/">802.3x
+flow control code</a> which caused them to spew out PAUSE frames when the
+chipset crashed or its buffer filled out. This problem was magnified by the
+BCM56314 and BCM56820 switch-on-a-chip devices (a component in a number of
+Dell's top-of-rack switches), which, by default, spewed PAUSE frames at *every*
+interface trying to communicate with the offending 5709 NIC. This led to
+cascading failures on entire switches or networks.
+
+The Broadcom 57711 is also <a
+href="http://communities.vmware.com/thread/284628?start=0&tstart=0">notorious</a>
+for causing extremely high latencies under load with jumbo frames; a
+particularly thorny issue for ESX users with iSCSI-backed storage.
+
 
 ## Internal partitions
 
