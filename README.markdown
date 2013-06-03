@@ -252,15 +252,15 @@ Distributed systems are *hard*.
 
 Unreliable NIC hardware or drivers are implicated in a broad array of
 partitions. <a href="http://www.spinics.net/lists/netdev/msg210485.html">Marc
-Donges and Michael Chan</a> bring us a thrilling report of the BCM5709 chipset
-abruptly dropping inbound, *but not outbound* packets to a machine. Because
-inbound packets were dropped, the node was unable to service requests. Because
-it could still send heartbeats to its hot spare via keepalived, the spare
-considered it alive and refused to take over. The service was unavailable for
-five hours, and did not recover without a reboot.
+Donges and Michael Chan</a> bring us a thrilling report of the popular BCM5709
+chipset abruptly dropping inbound, *but not outbound* packets to a machine.
+Because inbound packets were dropped, the node was unable to service requests.
+Because it could still send heartbeats to its hot spare via keepalived, the
+spare considered it alive and refused to take over. The service was unavailable
+for five hours, and did not recover without a reboot.
 
 Sven Ulland <a
-href="http://www.spinics.net/lists/netdev/msg210491.html">follows up</a>,
+href="http://www.spinics.net/lists/netdev/msg210491.html">followed up</a>,
 reporting the same symptoms with the BCM5709S chipset on Linux
 2.6.32-41squeeze2. Despite pulling commits from mainline which supposedly fixed
 a similar set of issues with the bnx2 driver, they were unable to resolve the
@@ -280,10 +280,11 @@ cascading failures on entire switches or networks.
 The bnx2 driver could also cause transient or flapping network failures, as
 described in this <a
 href="http://elasticsearch-users.115913.n3.nabble.com/Cluster-Split-Brain-td3333510.html">ElasticSearch
-split brain report</a>. Meanwhile, the the Broadcom 57711 was
-<ahref="http://communities.vmware.com/thread/284628?start=0&tstart=0">notorious</a>
-for causing extremely high latencies under load with jumbo frames; a
-particularly thorny issue for ESX users with iSCSI-backed storage.
+split brain report</a>. Meanwhile, the the Broadcom 57711 was notorious for
+causing <a
+href="http://communities.vmware.com/thread/284628?start=0&tstart=0">extremely
+high latencies under load with jumbo frames</a>; a particularly thorny issue
+for ESX users with iSCSI-backed storage.
 
 
 ### A GlusterFS partition caused by a driver bug
