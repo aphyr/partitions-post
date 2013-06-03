@@ -234,58 +234,8 @@ they note in the postmortem:
 Distributed systems are *hard*.
 
 
-## Power failure
 
-### Fog Creek
-
-As Microsoft's SIGCOMM paper suggests, redundancy doesn't always prevent link
-failure. <a href="http://status.fogcreek.com/2011/06/postmortem.html">When a
-power distribution unit failed</a> and took down one of two redundant
-top-of-rack switches, Fog Creek lost service for a subset of customers on that
-rack, but remained consistent and available for most users. However, the
-*redundant* switch in that rack *also* lost power, for undetermined reasons.
-That failure isolated the two neighboring racks from one another, taking
-down all On Demand services.
-
-
-## Network loops
-
-### Github
-
-In an effort to address high latencies caused by a daisy-chained network
-topology, Github <a
-href="https://github.com/blog/1346-network-problems-last-friday">installed a
-set of aggregation switches</a> in their datacenter. Despite a redundant
-network, the installation process resulted in bridge loops, and switches
-disabled links to prevent failure. This problem was quickly resolved, but later
-investigation revealed that many interfaces were still pegged at 100% capacity.
-
-While investigating that problem, a switch misconfiguration resulted in an
-automated fault detector destroying *all* links when an individual link was
-disabled, which caused 18 minutes of hard downtime. The problem was later
-traced to a firmware bug preventing switches from updating their MAC address
-caches correctly, forcing them to broadcast most packets to every interface. 
-
-### Fog Creek
-
-<a href="http://status.fogcreek.com/2012/05/may-5-6-network-maintenance-post-mortem.html">During a planned network reconfiguration to improve reliability</a>, Fog Creek suddenly lost access to their network.
-
-> A network loop had formed between several switches.
-> 
-> The gateways controlling access to the switch management network were
-> isolated from each other, generating a split-brain scenario. Neither were
-> accessible due to a sudden traffic flood. 
-> 
-> The flood was the result of a multi-switch BPDU (bridge protocol data unit)
-> flood, indicating a spanning-tree flap. This is most likely what was changing
-> the loop domain.
-
-According to the BPDU standard, the flood *shouldn't have happened*. Unexpected
-behavior outside the rules of the system caused <b>two hours of total service
-unavailability.</b>
-
-
-## Faulty NICs and drivers
+## NICs and drivers
 
 ### BCM5709 and friends
 
@@ -346,7 +296,65 @@ pairs:
 > due to VMs going down in an uncontrolled way.
 
 
-## Plain old network failures
+## Datacenter network failures
+
+### Fog Creek
+
+As Microsoft's SIGCOMM paper suggests, redundancy doesn't always prevent link
+failure. <a href="http://status.fogcreek.com/2011/06/postmortem.html">When a
+power distribution unit failed</a> and took down one of two redundant
+top-of-rack switches, Fog Creek lost service for a subset of customers on that
+rack, but remained consistent and available for most users. However, the
+*redundant* switch in that rack *also* lost power, for undetermined reasons.
+That failure isolated the two neighboring racks from one another, taking
+down all On Demand services.
+
+
+### Fog Creek
+
+<a href="http://status.fogcreek.com/2012/05/may-5-6-network-maintenance-post-mortem.html">During a planned network reconfiguration to improve reliability</a>, Fog Creek suddenly lost access to their network.
+
+> A network loop had formed between several switches.
+> 
+> The gateways controlling access to the switch management network were
+> isolated from each other, generating a split-brain scenario. Neither were
+> accessible due to a sudden traffic flood. 
+> 
+> The flood was the result of a multi-switch BPDU (bridge protocol data unit)
+> flood, indicating a spanning-tree flap. This is most likely what was changing
+> the loop domain.
+
+According to the BPDU standard, the flood *shouldn't have happened*. Unexpected
+behavior outside the rules of the system caused <b>two hours of total service
+unavailability.</b>
+
+
+### Github
+
+In an effort to address high latencies caused by a daisy-chained network
+topology, Github <a
+href="https://github.com/blog/1346-network-problems-last-friday">installed a
+set of aggregation switches</a> in their datacenter. Despite a redundant
+network, the installation process resulted in bridge loops, and switches
+disabled links to prevent failure. This problem was quickly resolved, but later
+investigation revealed that many interfaces were still pegged at 100% capacity.
+
+While investigating that problem, a switch misconfiguration resulted in an
+automated fault detector destroying *all* links when an individual link was
+disabled, which caused 18 minutes of hard downtime. The problem was later
+traced to a firmware bug preventing switches from updating their MAC address
+caches correctly, forcing them to broadcast most packets to every interface. 
+
+
+### Mystery RabbitMQ partitions
+
+Sometimes, nobody knows why the system partitioned. This <a
+href="http://serverfault.com/questions/497308/rabbitmq-network-partition-error">RabbitMQ
+failure</a> seems like one of those cases: few retransmits, no large gaps
+between messages, and no clear loss of connectivity between nodes. Upping the
+partition detection timeout to 2 minutes reduced the frequency of partitions,
+but didn't prevent them altogether. 
+
 
 ### DRBD split-brain
 
@@ -358,6 +366,7 @@ to divergent filesystem-level changes. The only real option for resolving these
 kinds of conflicts is to discard all writes not made to a selected component of
 the cluster.
 
+
 ### A Novell Cluster split-brain
 
 Intermittent failures can lead to long outages. In this <a
@@ -368,14 +377,6 @@ The secondary node eventually killed itself, and the primary (though still
 running) was no longer reachable by other hosts on the network. The post goes
 on to detail a series of network partition events correlated with backup jobs.
 
-### Mystery RabbitMQ partitions
-
-Sometimes, nobody knows why the system partitioned. This <a
-href="http://serverfault.com/questions/497308/rabbitmq-network-partition-error">RabbitMQ
-failure</a> seems like one of those cases: few retransmits, no large gaps
-between messages, and no clear loss of connectivity between nodes. Upping the
-partition detection timeout to 2 minutes reduced the frequency of partitions,
-but didn't prevent them altogether. 
 
 ### Github
 
