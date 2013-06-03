@@ -672,4 +672,4 @@ highly reliable networks. And, from Google and Amazon, who operate commodity and
 
 Have an answer to the question: *when my servers can't talk, what happens to my application?* Based on what we've seen, your network is going to ask you.
 
-*We invite and encourage you to contribute your own experiences with or without network partitions. Open a pull request on this page, leave a comment, write a blog post, or release a post-mortem. Data will inform this conversation, current practice, future designs, and, ultimately, the availability of the systems you depend on."
+*We invite and encourage you to contribute your own experiences with or without network partitions. Open a pull request on this page, leave a comment, write a blog post, or release a post-mortem. Data will inform this conversation, current practice, future designs, and, ultimately, the availability of the systems you depend on.*
