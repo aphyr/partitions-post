@@ -142,148 +142,6 @@ was too restrictive for many applications:
 
 
 
-## GC, Disk IO, and CPU load
-
-Not all partitions originate in the physical network. Sometimes dropped or delayed
-messages are a consequence of crashes, race conditions, OS scheduler latency,
-or overloaded processes. The following studies highlight the fact that partitions--wherein the system delays or drops messages--can occur at any layer of the software stack.
-
-### High CPU use
-
-Bonsai.io <a
-href="http://www.bonsai.io/blog/2013/03/05/outage-post-mortem">discovered</a>
-high CPU use and load averages on an ElasticSearch node. They restarted the
-cluster, but upon restart, the cluster partitioned itself into two independent
-components. The failure led to 20 minutes of unavailability, and six hours of
-degraded service.
-
-
-### Long GC pauses
-
-Stop-the-world garbage collection can force application latencies on the order
-of seconds to minutes. As Searchbox.io <a
-href="http://blog.searchbox.io/blog/2013/03/03/january-postmortem">observed</a>,
-GC pressure in an ElasticSearch cluster can cause secondary nodes to declare a
-primary dead and to attempt a new election. Because their configuration used a low value of `zen.minimum_master_nodes`, ElasticSearch was able to elect
-two simultaneous primaries, leading to inconsistency and downtime.
-
-
-### MySQL overload and a Pacemaker segfault
-
-Github relies heavily on Pacemaker and Heartbeat: programs which coordinate
-cluster resources between nodes. They use Percona Replication Manager, a
-resource agent for Pacemaker, to replicate their MySQL database between three
-nodes.
-
-On September 10th, 2012, a routine database migration caused unexpectedly high
-load on the MySQL primary. Percona Replication Manager, unable to perform
-health checks against the busy MySQL instance, decided the primary was down and
-promoted a secondary. The secondary had a cold cache and performed poorly.
-Normal query load on the node caused it to slow down, and Percona failed *back*
-to the original primary. The operations team put Pacemaker into
-maintenance-mode, temporarily halting automatic failover. The site appeared to
-recover.
-
-The next morning, the operations team discovered that the standby MySQL node
-was no longer replicating changes from the primary. Operations decided to
-disable Pacemaker's maintenance mode to allow the replication manager to fix
-the problem.
-
-> Upon attempting to disable maintenance-mode, a Pacemaker segfault occurred
-> that resulted in a cluster state partition. After this update, two nodes
-> (I'll call them 'a' and 'b') rejected most messages from the third node
-> ('c'), while the third node rejected most messages from the other two.
-> Despite having configured the cluster to require a majority of machines to
-> agree on the state of the cluster before taking action, two simultaneous
-> master election decisions were attempted without proper coordination. In the
-> first cluster, master election was interrupted by messages from the second
-> cluster and MySQL was stopped.
-
-> In the second, single-node cluster, node 'c' was elected at 8:19 AM, and any
-> subsequent messages from the other two-node cluster were discarded. As luck
-> would have it, the 'c' node was the node that our operations team previously
-> determined to be out of date. We detected this fact and powered off this
-> out-of-date node at 8:26 AM to end the partition and prevent further data
-> drift, taking down all production database access and thus all access to
-> github.com.
-
-The partition caused inconsistency in the MySQL database--both internally and
-between MySQL and other data stores, like Redis. Because foreign key
-relationships were not consistent, Github showed private repositories to the
-wrong user's dashboards, and incorrectly routed some newly created repos.
-
-Github thought carefully about their infrastructure design, and were still
-surprised by a complex interaction of partial failures and software bugs. As
-they note in the postmortem:
-
-> ... if any member of our operations team had been asked if the failover
-> should have been performed, the answer would have been a resounding
-> <b>no</b>.
-
-Distributed systems are *hard*.
-
-
-
-## NICs and drivers
-
-### BCM5709 and friends
-
-Unreliable NIC hardware or drivers are implicated in a broad array of
-partitions. <a href="http://www.spinics.net/lists/netdev/msg210485.html">Marc
-Donges and Michael Chan</a> bring us a thrilling report of the popular BCM5709
-chipset abruptly dropping inbound *but not outbound* packets to a machine.
-Because the NIC dropped inbound packets, the node was unable to service requests.
-However, because it could still *send* heartbeats to its hot spare via keepalived, the
-spare considered the primary alive and refused to take over. The service was unavailable
-for five hours and did not recover without a reboot.
-
-Sven Ulland <a
-href="http://www.spinics.net/lists/netdev/msg210491.html">followed up</a>,
-reporting the same symptoms with the BCM5709S chipset on Linux
-2.6.32-41squeeze2. Despite pulling commits from mainline which supposedly fixed
-a similar set of issues with the bnx2 driver, they were unable to resolve the
-issue until version 2.6.38.
-
-Since Dell shipped a large number of servers with the Broadcom BCM5709, the
-impact of these firmware bugs was widely observed. For instance, the 5709 had a bug
-in its <a
-href="http://monolight.cc/2011/08/flow-control-flaw-in-broadcom-bcm5709-nics-and-bcm56xxx-switches/">802.3x
-flow control code</a> causing them to spew PAUSE frames when the
-chipset crashed or its buffer filled out. This problem was magnified by the
-BCM56314 and BCM56820 switch-on-a-chip devices (a component in a number of
-Dell's top-of-rack switches), which, by default, spewed PAUSE frames at *every*
-interface trying to communicate with the offending 5709 NIC. This led to
-cascading failures on entire switches or networks.
-
-The bnx2 driver could also cause transient or flapping network failures, as
-described in this <a
-href="http://elasticsearch-users.115913.n3.nabble.com/Cluster-Split-Brain-td3333510.html">ElasticSearch
-split brain report</a>. Meanwhile, the the Broadcom 57711 was notorious for
-causing <a
-href="http://communities.vmware.com/thread/284628?start=0&tstart=0">extremely
-high latencies under load with jumbo frames</a>, a particularly thorny issue
-for ESX users with iSCSI-backed storage.
-
-
-### A GlusterFS partition caused by a driver bug
-
-After a scheduled upgrade, <a
-href="https://www.citycloud.eu/cloud-computing/post-mortem/">CityCloud noticed
-unexpected network failures</a> in two distinct GlusterFS pairs</a>, followed
-by a third. Suspecting link aggregation, CityCloud disabled the feature on
-their switches and allowed self-heal operations to proceed.
-
-Roughly 12 hours later, the network failures returned on one node. CityCloud
-identified the cause as driver issue and updated the downed node, returning
-service. However, the outage resulted in data inconsistency between GlusterFS
-pairs:
-
-> As the servers lost storage abruptly there were certain types of Gluster
-> issues where files did not match each other on the two nodes in each storage
-> pair. There were also some cases of data corruption in the VMs filesystems
-> due to VMs going down in an uncontrolled way.
-
-
 ## Datacenter network failures
 
 Individual interfaces can fail, but those typically appear as single-node
@@ -396,6 +254,66 @@ To prevent filesystem corruption, DRBD requires that administrators ensure the
 original primary node is still the primary node before resuming replication.
 For pairs where both nodes were primary, the ops team had to examine log files
 and/or bring the node online in isolation to determine its state. Recovering those downed fileserver pairs took five hours, during which Github service was significantly degraded.
+
+
+## NICs and drivers
+
+### BCM5709 and friends
+
+Unreliable NIC hardware or drivers are implicated in a broad array of
+partitions. <a href="http://www.spinics.net/lists/netdev/msg210485.html">Marc
+Donges and Michael Chan</a> bring us a thrilling report of the popular BCM5709
+chipset abruptly dropping inbound *but not outbound* packets to a machine.
+Because the NIC dropped inbound packets, the node was unable to service requests.
+However, because it could still *send* heartbeats to its hot spare via keepalived, the
+spare considered the primary alive and refused to take over. The service was unavailable
+for five hours and did not recover without a reboot.
+
+Sven Ulland <a
+href="http://www.spinics.net/lists/netdev/msg210491.html">followed up</a>,
+reporting the same symptoms with the BCM5709S chipset on Linux
+2.6.32-41squeeze2. Despite pulling commits from mainline which supposedly fixed
+a similar set of issues with the bnx2 driver, they were unable to resolve the
+issue until version 2.6.38.
+
+Since Dell shipped a large number of servers with the Broadcom BCM5709, the
+impact of these firmware bugs was widely observed. For instance, the 5709 had a bug
+in its <a
+href="http://monolight.cc/2011/08/flow-control-flaw-in-broadcom-bcm5709-nics-and-bcm56xxx-switches/">802.3x
+flow control code</a> causing them to spew PAUSE frames when the
+chipset crashed or its buffer filled out. This problem was magnified by the
+BCM56314 and BCM56820 switch-on-a-chip devices (a component in a number of
+Dell's top-of-rack switches), which, by default, spewed PAUSE frames at *every*
+interface trying to communicate with the offending 5709 NIC. This led to
+cascading failures on entire switches or networks.
+
+The bnx2 driver could also cause transient or flapping network failures, as
+described in this <a
+href="http://elasticsearch-users.115913.n3.nabble.com/Cluster-Split-Brain-td3333510.html">ElasticSearch
+split brain report</a>. Meanwhile, the the Broadcom 57711 was notorious for
+causing <a
+href="http://communities.vmware.com/thread/284628?start=0&tstart=0">extremely
+high latencies under load with jumbo frames</a>, a particularly thorny issue
+for ESX users with iSCSI-backed storage.
+
+
+### A GlusterFS partition caused by a driver bug
+
+After a scheduled upgrade, <a
+href="https://www.citycloud.eu/cloud-computing/post-mortem/">CityCloud noticed
+unexpected network failures</a> in two distinct GlusterFS pairs</a>, followed
+by a third. Suspecting link aggregation, CityCloud disabled the feature on
+their switches and allowed self-heal operations to proceed.
+
+Roughly 12 hours later, the network failures returned on one node. CityCloud
+identified the cause as driver issue and updated the downed node, returning
+service. However, the outage resulted in data inconsistency between GlusterFS
+pairs:
+
+> As the servers lost storage abruptly there were certain types of Gluster
+> issues where files did not match each other on the two nodes in each storage
+> pair. There were also some cases of data corruption in the VMs filesystems
+> due to VMs going down in an uncontrolled way.
 
 
 ## Managed hosting providers
@@ -659,6 +577,89 @@ href="http://www.renesys.com/2005/12/internetwide-nearcatastrophela/">in
 2005</a> (where a misconfiguration in Turkey attempted in a redirect for the
 *entire* internet), and <a
 href="http://merit.edu/mail.archives/nanog/1997-04/msg00380.html">in 1997</a>.
+
+
+
+## GC, Disk IO, and CPU load
+
+Not all partitions originate in the physical network. Sometimes dropped or delayed
+messages are a consequence of crashes, race conditions, OS scheduler latency,
+or overloaded processes. The following studies highlight the fact that partitions--wherein the system delays or drops messages--can occur at any layer of the software stack.
+
+### High CPU use
+
+Bonsai.io <a
+href="http://www.bonsai.io/blog/2013/03/05/outage-post-mortem">discovered</a>
+high CPU use and load averages on an ElasticSearch node. They restarted the
+cluster, but upon restart, the cluster partitioned itself into two independent
+components. The failure led to 20 minutes of unavailability, and six hours of
+degraded service.
+
+
+### Long GC pauses
+
+Stop-the-world garbage collection can force application latencies on the order
+of seconds to minutes. As Searchbox.io <a
+href="http://blog.searchbox.io/blog/2013/03/03/january-postmortem">observed</a>,
+GC pressure in an ElasticSearch cluster can cause secondary nodes to declare a
+primary dead and to attempt a new election. Because their configuration used a low value of `zen.minimum_master_nodes`, ElasticSearch was able to elect
+two simultaneous primaries, leading to inconsistency and downtime.
+
+
+### MySQL overload and a Pacemaker segfault
+
+Github relies heavily on Pacemaker and Heartbeat: programs which coordinate
+cluster resources between nodes. They use Percona Replication Manager, a
+resource agent for Pacemaker, to replicate their MySQL database between three
+nodes.
+
+On September 10th, 2012, a routine database migration caused unexpectedly high
+load on the MySQL primary. Percona Replication Manager, unable to perform
+health checks against the busy MySQL instance, decided the primary was down and
+promoted a secondary. The secondary had a cold cache and performed poorly.
+Normal query load on the node caused it to slow down, and Percona failed *back*
+to the original primary. The operations team put Pacemaker into
+maintenance-mode, temporarily halting automatic failover. The site appeared to
+recover.
+
+The next morning, the operations team discovered that the standby MySQL node
+was no longer replicating changes from the primary. Operations decided to
+disable Pacemaker's maintenance mode to allow the replication manager to fix
+the problem.
+
+> Upon attempting to disable maintenance-mode, a Pacemaker segfault occurred
+> that resulted in a cluster state partition. After this update, two nodes
+> (I'll call them 'a' and 'b') rejected most messages from the third node
+> ('c'), while the third node rejected most messages from the other two.
+> Despite having configured the cluster to require a majority of machines to
+> agree on the state of the cluster before taking action, two simultaneous
+> master election decisions were attempted without proper coordination. In the
+> first cluster, master election was interrupted by messages from the second
+> cluster and MySQL was stopped.
+
+> In the second, single-node cluster, node 'c' was elected at 8:19 AM, and any
+> subsequent messages from the other two-node cluster were discarded. As luck
+> would have it, the 'c' node was the node that our operations team previously
+> determined to be out of date. We detected this fact and powered off this
+> out-of-date node at 8:26 AM to end the partition and prevent further data
+> drift, taking down all production database access and thus all access to
+> github.com.
+
+The partition caused inconsistency in the MySQL database--both internally and
+between MySQL and other data stores, like Redis. Because foreign key
+relationships were not consistent, Github showed private repositories to the
+wrong user's dashboards, and incorrectly routed some newly created repos.
+
+Github thought carefully about their infrastructure design, and were still
+surprised by a complex interaction of partial failures and software bugs. As
+they note in the postmortem:
+
+> ... if any member of our operations team had been asked if the failover
+> should have been performed, the answer would have been a resounding
+> <b>no</b>.
+
+Distributed systems are *hard*.
+
 
 
 ## Where do we go from here?
