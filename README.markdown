@@ -195,6 +195,87 @@ was too restrictive for many applications:
 > applications need a relaxed approach."
 
 
+## GC, Disk IO, and CPU load
+
+
+### Bonsai.io
+
+Not all partitions involve the network hardware directly; some are caused by
+the software's inability to process messages. Bonsai.io <a
+href="http://www.bonsai.io/blog/2013/03/05/outage-post-mortem">discovered</a>
+high CPU use and load averages on an ElasticSearch node. They restarted the
+cluster, but it failed to converge, partitioning itself into two independent
+components. The failure led to <b>20 minutes of hard downtime, and six hours of
+degraded service.</b>
+
+
+### Searchbox.io
+
+Stop-the-world garbage collection can force application latencies on the order
+of seconds to minutes. As Searchbox.io <a
+href="http://blog.searchbox.io/blog/2013/03/03/january-postmortem">observed</a>,
+GC pressure in an ElasticSearch cluster caused secondary nodes to declare a
+primary dead and to attempt a new election. Because their configuration used a low value of `zen.minimum_master_nodes`, ElasticSearch was able to elect
+two simultaneous primaries, leading to inconsistency and downtime. Configuring
+distributed systems is difficult, and benign omissions can lead to serious
+consequences.
+
+
+### Github
+
+Github relies heavily on Pacemaker and Heartbeat; programs which coordinate
+cluster resources between nodes. They use Percona Replication Manager, a
+resource agent for Pacemaker, to replicate their MySQL database between three
+nodes.
+
+On September 10th, 2012, a routine database migration caused unexpectedly high
+load on the MySQL primary. Percona Replication Manager, unable to perform
+health checks against the busy MySQL instance, decided the primary was down and
+promoted a secondary. The secondary had a cold cache and performed poorly.
+Normal query load on the node caused it to slow down, and Percona failed *back*
+to the original primary. The operations team put Pacemaker into
+maintenance-mode, temporarily halting automatic failover. The site appeared to
+recover.
+
+The next morning, the operations team discovered that the standby MySQL node
+was no longer replicating changes from the primary. Operations decided to
+disable Pacemaker's maintenance mode to allow the replication manager to fix
+the problem.
+
+> Upon attempting to disable maintenance-mode, a Pacemaker segfault occurred
+> that resulted in a cluster state partition. After this update, two nodes
+> (I'll call them 'a' and 'b') rejected most messages from the third node
+> ('c'), while the third node rejected most messages from the other two.
+> Despite having configured the cluster to require a majority of machines to
+> agree on the state of the cluster before taking action, two simultaneous
+> master election decisions were attempted without proper coordination. In the
+> first cluster, master election was interrupted by messages from the second
+> cluster and MySQL was stopped.
+
+> In the second, single-node cluster, node 'c' was elected at 8:19 AM, and any
+> subsequent messages from the other two-node cluster were discarded. As luck
+> would have it, the 'c' node was the node that our operations team previously
+> determined to be out of date. We detected this fact and powered off this
+> out-of-date node at 8:26 AM to end the partition and prevent further data
+> drift, taking down all production database access and thus all access to
+> github.com.
+
+The partition caused inconsistency in the MySQL database--both internally and
+between MySQL and other datastores, like Redis. Because foreign key
+relationships were no longer valid, Github showed private repositories to the
+wrong user's dashboards, and incorrectly routed some newly created repos.
+
+Github thought carefully about their infrastructure design, and were still
+surprised by a complex interaction of partial failures and software bugs. As
+they note in the postmortem:
+
+> ... if any member of our operations team had been asked if the failover
+> should have been performed, the answer would have been a resounding
+> <b>no</b>.
+
+Distributed systems are *hard*.
+
+
 ## Power failure
 
 ### Fog Creek
@@ -205,13 +286,27 @@ power distribution unit failed</a> and took down one of two redundant
 top-of-rack switches, Fog Creek lost service for a subset of customers on that
 rack, but remained consistent and available for most users. However, the
 *redundant* switch in that rack *also* lost power, for undetermined reasons.
-That failure isolated the two neighboring racks from one another, <b>taking
-down all On Demand services.</b>
-
+That failure isolated the two neighboring racks from one another, taking
+down all On Demand services.
 
 
 ## Network loops
 
+### Github
+
+In an effort to address high latencies caused by a daisy-chained network
+topology, Github <a
+href="https://github.com/blog/1346-network-problems-last-friday">installed a
+set of aggregation switches</a> in their datacenter. Despite a redundant
+network, the installation process resulted in bridge loops, and switches
+disabled links to prevent failure. This problem was quickly resolved, but later
+investigation revealed that many interfaces were still pegged at 100% capacity.
+
+While investigating that problem, a switch misconfiguration resulted in an
+automated fault detector destroying *all* links when an individual link was
+disabled, which caused 18 minutes of hard downtime. The problem was later
+traced to a firmware bug preventing switches from updating their MAC address
+caches correctly, forcing them to broadcast most packets to every interface. 
 
 ### Fog Creek
 
@@ -230,28 +325,6 @@ down all On Demand services.</b>
 According to the BPDU standard, the flood *shouldn't have happened*. Unexpected
 behavior outside the rules of the system caused <b>two hours of total service
 unavailability.</b>
-
-
-### Github
-
-In an effort to address high latencies caused by a daisy-chained network
-topology, Github <a
-href="https://github.com/blog/1346-network-problems-last-friday">installed a
-set of aggregation switches</a> in their datacenter. Despite a redundant
-network, the installation process resulted in bridge loops, and switches
-disabled links to prevent failure. This problem was quickly resolved, but later
-investigation revealed that many interfaces were still pegged at 100% capacity.
-
-While investigating that problem, a switch misconfiguration resulted in an
-automated fault detector destroying *all* links when an individual link was
-disabled, which caused 18 minutes of hard downtime. The problem was later
-traced to a firmware bug preventing switches from updating their MAC address
-caches correctly, forcing them to broadcast most packets to every interface. 
-
-
-
-
-
 
 
 ## Faulty NICs and drivers
@@ -315,6 +388,16 @@ pairs:
 
 ## Plain old network failures
 
+### DRBD split-brain
+
+When a two-node cluster partitions, there are no cases in which a node can
+reliably declare itself to be the primary. When this happens to <a
+href="http://serverfault.com/questions/485545/dual-primary-ocfs2-drbd-encountered-split-brain-is-recovery-always-going-to-be">a
+DRBD filesystem</a>, both nodes can remain online and accepting writes, leading
+to divergent filesystem-level changes. The only real option for resolving these
+kinds of conflicts is to discard all writes not made to a selected component of
+the cluster.
+
 ### A Novell Cluster split-brain
 
 Intermittent failures can lead to long outages. In this <a
@@ -325,15 +408,14 @@ The secondary node eventually killed itself, and the primary (though still
 running) was no longer reachable by other hosts on the network. The post goes
 on to detail a series of network partition events correlated with backup jobs.
 
-### DRBD split-brain
+### Mystery RabbitMQ partitions
 
-When a two-node cluster partitions, there are no cases in which a node can
-reliably declare itself to be the primary. When this happens to <a
-href="http://serverfault.com/questions/485545/dual-primary-ocfs2-drbd-encountered-split-brain-is-recovery-always-going-to-be">a
-DRBD filesystem</a>, both nodes can remain online and accepting writes, leading
-to divergent filesystem-level changes. The only real option for resolving these
-kinds of conflicts is to discard all writes not made to a selected component of
-the cluster.
+Sometimes, nobody knows why the system partitioned. This <a
+href="http://serverfault.com/questions/497308/rabbitmq-network-partition-error">RabbitMQ
+failure</a> seems like one of those cases: few retransmits, no large gaps
+between messages, and no clear loss of connectivity between nodes. Upping the
+partition detection timeout to 2 minutes reduced the frequency of partitions,
+but didn't prevent them altogether. 
 
 ### Github
 
@@ -430,7 +512,8 @@ demonstrated in the Jepsen post:
 
 This partition caused <b>two hours of write loss</b>. From my conversations
 with large-scale MongoDB users, I gather that network events causing failover
-on EC2 are common. While most folks report that running their own hardware is
+on EC2 are common. Simultaneous primaries accepting writes for *multiple days*
+are not unknown. While most folks report that running their own hardware is
 more reliable, I know at least one company which sees their MongoDB cluster
 fail over on a weekly basis.
 
@@ -603,7 +686,15 @@ takes is complex, and calling on-site engineers to find and reboot routers by
 hand takes time. Recovery began in 30 minutes and was complete after an hour of
 unavailability.
 
+### Juniper Routing Bug
 
+The software running inside network hardware (i.e., firmware) is subject to
+bugs just like the rest of computer software. A bug in a router upgrade in
+Juniper Networks's routers <a
+href="http://www.eweek.com/c/a/IT-Infrastructure/Bug-in-Juniper-Router-Firmware-Update-Causes-Massive-Internet-Outage-709180/">caused
+outages</a> in Level 3 Communications's networking backbone. This subsequently
+knocked services like Time Warner Cable and RIM BlackBerry, and several UK
+internet service providers offline.
 
 ### Global BGP Outages
 
@@ -622,109 +713,3 @@ href="http://www.renesys.com/2005/12/internetwide-nearcatastrophela/">in
 2005</a> (where a misconfiguration in Turkey attempted in a redirect for the
 *entire* internet), and <a
 href="http://merit.edu/mail.archives/nanog/1997-04/msg00380.html">in 1997</a>.
-
-
-### Juniper Routing Bug
-
-The software running inside network hardware (i.e., firmware) is subject to
-bugs just like the rest of computer software. A bug in a router upgrade in
-Juniper Networks's routers <a
-href="http://www.eweek.com/c/a/IT-Infrastructure/Bug-in-Juniper-Router-Firmware-Update-Causes-Massive-Internet-Outage-709180/">caused
-outages</a> in Level 3 Communications's networking backbone. This subsequently
-knocked services like Time Warner Cable and RIM BlackBerry, and several UK
-internet service providers offline.
-
-
-## GC, Disk IO, and CPU load
-
-
-### Bonsai.io
-
-Not all partitions involve the network hardware directly; some are caused by
-the software's inability to process messages. Bonsai.io <a
-href="http://www.bonsai.io/blog/2013/03/05/outage-post-mortem">discovered</a>
-high CPU use and load averages on an ElasticSearch node. They restarted the
-cluster, but it failed to converge, partitioning itself into two independent
-components. The failure led to <b>20 minutes of hard downtime, and six hours of
-degraded service.</b>
-
-
-### Searchbox.io
-
-Stop-the-world garbage collection can force application latencies on the order
-of seconds to minutes. As Searchbox.io <a
-href="http://blog.searchbox.io/blog/2013/03/03/january-postmortem">observed</a>,
-GC pressure in an ElasticSearch cluster caused secondary nodes to declare a
-primary dead and to attempt a new election. Because their configuration used a low value of `zen.minimum_master_nodes`, ElasticSearch was able to elect
-two simultaneous primaries, leading to inconsistency and downtime. Configuring
-distributed systems is difficult, and benign omissions can lead to serious
-consequences.
-
-
-### Github
-
-Github relies heavily on Pacemaker and Heartbeat; programs which coordinate
-cluster resources between nodes. They use Percona Replication Manager, a
-resource agent for Pacemaker, to replicate their MySQL database between three
-nodes.
-
-On September 10th, 2012, a routine database migration caused unexpectedly high
-load on the MySQL primary. Percona Replication Manager, unable to perform
-health checks against the busy MySQL instance, decided the primary was down and
-promoted a secondary. The secondary had a cold cache and performed poorly.
-Normal query load on the node caused it to slow down, and Percona failed *back*
-to the original primary. The operations team put Pacemaker into
-maintenance-mode, temporarily halting automatic failover. The site appeared to
-recover.
-
-The next morning, the operations team discovered that the standby MySQL node
-was no longer replicating changes from the primary. Operations decided to
-disable Pacemaker's maintenance mode to allow the replication manager to fix
-the problem.
-
-> Upon attempting to disable maintenance-mode, a Pacemaker segfault occurred
-> that resulted in a cluster state partition. After this update, two nodes
-> (I'll call them 'a' and 'b') rejected most messages from the third node
-> ('c'), while the third node rejected most messages from the other two.
-> Despite having configured the cluster to require a majority of machines to
-> agree on the state of the cluster before taking action, two simultaneous
-> master election decisions were attempted without proper coordination. In the
-> first cluster, master election was interrupted by messages from the second
-> cluster and MySQL was stopped.
-
-> In the second, single-node cluster, node 'c' was elected at 8:19 AM, and any
-> subsequent messages from the other two-node cluster were discarded. As luck
-> would have it, the 'c' node was the node that our operations team previously
-> determined to be out of date. We detected this fact and powered off this
-> out-of-date node at 8:26 AM to end the partition and prevent further data
-> drift, taking down all production database access and thus all access to
-> github.com.
-
-The partition caused inconsistency in the MySQL database--both internally and
-between MySQL and other datastores, like Redis. Because foreign key
-relationships were no longer valid, Github showed private repositories to the
-wrong user's dashboards, and incorrectly routed some newly created repos.
-
-Github thought carefully about their infrastructure design, and were still
-surprised by a complex interaction of partial failures and software bugs. As
-they note in the postmortem:
-
-> ... if any member of our operations team had been asked if the failover
-> should have been performed, the answer would have been a resounding
-> <b>no</b>.
-
-Distributed systems are *hard*.
-
-
-## Mysteries
-
-### Mystery RabbitMQ partitions
-
-Sometimes, nobody knows why the system partitioned. This <a
-href="http://serverfault.com/questions/497308/rabbitmq-network-partition-error">RabbitMQ
-failure</a> seems like one of those cases: few retransmits, no large gaps
-between messages, and no clear loss of connectivity between nodes. Upping the
-partition detection timeout to 2 minutes reduced the frequency of partitions,
-but didn't prevent them altogether. 
-
-
