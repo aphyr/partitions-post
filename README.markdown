@@ -26,12 +26,12 @@ $(document).ready(function() {
  who I invited to join me in writing this post.*
 
 
-Partitions are a contentious matter. Some claim that modern IP
+Network partitions are a contentious subject. Some claim that modern
 networks are reliable and that we are too concerned with designing for
 *theoretical* failure modes. They often accept that single-node
-failures are common, but we can <a
+failures are common, but argue that we can <a
 href="http://blog.voltdb.com/clarifications-cap-theorem-and-data-related-errors/">reliably
-detect and handle those failures</a>. Conversely,
+detect and handle thems</a>. Conversely,
 others <a
 href="http://www.rgoarchitects.com/files/fallacies.pdf">subscribe</a>
 to Peter Deutsch's <a
@@ -41,19 +41,14 @@ partitions do occur in their systems, and that, as James Hamilton of
 Amazon Web Services [neatly
 summarizes](http://perspectives.mvdirona.com/2010/04/07/StonebrakerOnCAPTheoremAndDatabases.aspx),
 "network partitions should be rare but net gear continues to cause
-more issues than it should." Given the <a
-href="http://henryr.github.io/cap-faq/">consequences of partition
-behavior for distributed systems design</a>, the answer to this question radically affects the design of distributed databases, queues, and applications. So who's right?
+more issues than it should." The answer to this debate <a
+href="http://henryr.github.io/cap-faq/">radically affects</a> the design of distributed databases, queues, and applications. So who's right?
 
-A key challenge in this debate is the lack of evidence. We have few normalized bases for comparing network and application reliability and even less data for each metric. We can track link availability and estimate packet loss, but understanding the end-to-end effect on *applications* is more difficult. The evidence we do have is difficult to generalize: it is often deployment-specific and closely tied to particular vendors, topologies, and application designs. Worse, even when an organization has clear picture of their network's behavior, they rarely share specifics.
-
-Finally, distributed systems are designed to resist failure, which means
-*noticeable* outages often depend on a complex interaction of failure modes.
-Redundancy, load, timing, and application semantics all play a role. Many applications silently degrade when the network fails, and resulting problems may not be understood for some time, when they are noticed at all.
+A key challenge in this dispute is the lack of evidence. We have few normalized bases for comparing network and application reliability and even less data for each. We can track link availability and estimate packet loss, but understanding the end-to-end effect on *applications* is more difficult. The scant evidence we have is difficult to generalize: it is often deployment-specific and closely tied to particular vendors, topologies, and application designs. Worse, even when an organization has clear picture of their network's behavior, they rarely share specifics. Finally, distributed systems are designed to resist failure, which means *noticeable* outages often depend on complex interactions of failure modes. Many applications silently degrade when the network fails, and resulting problems may not be understood for some time, when they are noticed at all.
 
 As a result, much of what we know about the failure modes in real-wold
 distributed systems is founded on guesswork and rumor. Sysadmins and developers
-will discuss failure modes over beers, but detailed postmortems and comprehensive surveys of availability are few and far between. In this post, we'd like to bring a few of these stories together. We believe this is a first step towards a more open and honest discussion of real-world partition behavior, and, ultimately, more robust distributed systems design.
+will quietly discuss failure modes over beers, but detailed, public postmortems and comprehensive surveys of network availability are few and far between. In this post, we'd like to bring a few of these stories together. We believe this is a first step towards a more open and honest discussion of real-world partition behavior, and, ultimately, more robust distributed systems designs.
 
 ## Hints from big deployments
 
@@ -668,15 +663,13 @@ href="http://merit.edu/mail.archives/nanog/1997-04/msg00380.html">in 1997</a>.
 
 ## Where do we go from here?
 
-This post is meant as a reference argument, to illustrate that, according to a wide array of practitioner accounts both on the Internet and in the academic literature, partitioning behavior occurs in many real-world deployments. Processes, servers, NICs, switches,
-networks, and globally distributed networks fail, and the economic
-consequences are real. Partitions deserve serious consideration. 
+This post is meant as a reference point, to illustrate that, according to a wide array of accounts, partition behavior occurs in many real-world deployments. Processes, servers, NICs, switches, networks, and globally distributed networks fail, and the economic consequences are real. Network outages can suddenly arise in systems that are stable for months at a time, or, alternatively, during routine upgrades or emergency maintenance. The consequences of these outages can range from increased latency and temporary unavailability to inconsistency, corruption, and data loss. Split-brain is not an academic concern: it happens to all kinds of systems--sometimes for *days on end*. Partitions deserve serious consideration.
 
-Partitions can occur at any time. Network outages can suddenly arise in systems that are stable for months at a time, or, alternatively, during routine upgrades or emergency maintenance. The consequences of these outages can range from increased latency and temporary unavailability to inconsistency, corruption, and data loss. Split-brain is not an academic concern: it happens to all kinds of systems--sometimes for *days on end*. 
-
-In practice, some networks really *are* reliable. Engineers at major financial firms report that, despite putting serious effort into designing systems that gracefully tolerate partitions, their networks rarely, if ever, exhibit partitioning behavior. Moreover, cautious engineering and lots of money can prevent outages.
+In practice, some networks really *are* reliable. Engineers at major financial firms report that, despite putting serious effort into designing systems that gracefully tolerate partitions, their networks rarely, if ever, exhibit partition behavior. Moreover, cautious engineering and lots of money can prevent outages.
 
 However, not all organizations can afford the cost or operational complexity of
 highly reliable networks. And, from Google and Amazon, who operate commodity and/or low-cost hardware due to sheer scale, to one-man startups built on shoestring budgets, failures are a reality. It's important to consider partitions *before* they occur--because it's much easier to make decisions about behavior under partition on a whiteboard than to redesign, re-engineer, and upgrade a complex system in production environment, especially when it's throwing 404 errors at your users. For some applications, giving 404 is okay, but know when it's not, and plan for partitions.
 
 Have an answer to the question: *when my servers can't talk, what happens to my application?* Based on what we've seen, your network is going to ask you.
+
+*We invite and encourage you to contribute your own experiences with or without network partitions. Open a pull request on this page, leave a comment, write a blog post, or release a post-mortem. Data will inform this conversation, current practice, future designs, and, ultimately, the availability of the systems you depend on."
