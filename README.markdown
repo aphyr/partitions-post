@@ -308,19 +308,19 @@ pairs:
 
 ## Datacenter network failures
 
-### Fog Creek
+### Power failure on both redundant switches
 
 As Microsoft's SIGCOMM paper suggests, redundancy doesn't always prevent link
 failure. <a href="http://status.fogcreek.com/2011/06/postmortem.html">When a
 power distribution unit failed</a> and took down one of two redundant
 top-of-rack switches, Fog Creek lost service for a subset of customers on that
 rack, but remained consistent and available for most users. However, the
-*redundant* switch in that rack *also* lost power, for undetermined reasons.
+other switch in that rack *also* lost power, for undetermined reasons.
 That failure isolated the two neighboring racks from one another, taking
 down all On Demand services.
 
 
-### Fog Creek
+### Switch split-brain caused by BPDU flood
 
 <a href="http://status.fogcreek.com/2012/05/may-5-6-network-maintenance-post-mortem.html">During a planned network reconfiguration to improve reliability</a>, Fog Creek suddenly lost access to their network.
 
@@ -335,11 +335,11 @@ down all On Demand services.
 > the loop domain.
 
 According to the BPDU standard, the flood *shouldn't have happened*. Unexpected
-behavior outside the rules of the system caused <b>two hours of total service
-unavailability.</b>
+behavior outside the rules of the system caused two hours of total service
+unavailability.
 
 
-### Github
+### Bridge loops, misconfiguration, broken MAC caches
 
 In an effort to address high latencies caused by a daisy-chained network
 topology, Github <a
@@ -372,12 +372,12 @@ When a two-node cluster partitions, there are no cases in which a node can
 reliably declare itself to be the primary. When this happens to <a
 href="http://serverfault.com/questions/485545/dual-primary-ocfs2-drbd-encountered-split-brain-is-recovery-always-going-to-be">a
 DRBD filesystem</a>, both nodes can remain online and accepting writes, leading
-to divergent filesystem-level changes. The only real option for resolving these
-kinds of conflicts is to discard all writes not made to a selected component of
-the cluster.
+to divergent filesystem-level changes. The only realistic option for resolving
+these kinds of conflicts is to discard all writes not made to a selected
+component of the cluster.
 
 
-### A Novell Cluster split-brain
+### A NetWare split-brain
 
 Intermittent failures can lead to long outages. In this <a
 href="http://novell.support.cluster-services.free-usenet.eu/Split-Brain-Condition_T31677168_S1">Usenet
@@ -385,12 +385,13 @@ post to novell.support.cluster-services</a>, an admin reports their two-node
 failover cluster running Novell NetWare experienced transient network outages.
 The secondary node eventually killed itself, and the primary (though still
 running) was no longer reachable by other hosts on the network. The post goes
-on to detail a series of network partition events correlated with backup jobs.
+on to detail a series of network partition events correlated with backup jobs!
 
 
-### Github
+### MLAG, Spanning Tree, and STONITH
 
-On <a href="https://github.com/blog/1364-downtime-last-saturday">December 22nd,
+Github writes great postmortems, and this one is no exception. On <a
+href="https://github.com/blog/1364-downtime-last-saturday">December 22nd,
 2012</a>, a planned software update on an aggregation switch caused some mild
 instability during the maintenance window. In order to collect diagnostic
 information about the instability, the network vendor killed a particular
