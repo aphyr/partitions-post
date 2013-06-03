@@ -36,7 +36,7 @@ others <a
 href="http://www.rgoarchitects.com/files/fallacies.pdf">subscribe</a>
 to Peter Deutsch's <a
 href="https://blogs.oracle.com/jag/resource/Fallacies.html">Fallacies
-of Distriuted Computing</a> and disagree. They'll attest that
+of Distributed Computing</a> and disagree. They'll attest that
 partitions do occur in their systems, and that, as James Hamilton of
 Amazon Web Services [neatly
 summarizes](http://perspectives.mvdirona.com/2010/04/07/StonebrakerOnCAPTheoremAndDatabases.aspx),
