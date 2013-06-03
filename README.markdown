@@ -679,10 +679,29 @@ href="http://www.renesys.com/2005/12/internetwide-nearcatastrophela/">in
 href="http://merit.edu/mail.archives/nanog/1997-04/msg00380.html">in 1997</a>.
 
 
-## Final thoughts
+## Where do we go from here?
 
-It's true: many networks *are* reliable. However, partitions do
-happen to networks of all shapes and sizes--and often for unpredictable
-reasons. It's worth considering the risk *before* they happen to you--because
-it's much easier to design a partition-tolerant system on a whiteboard than to
-redesign and transition a complex system in your production environment.
+This post is meant as a reference argument; to illustrate that the problem is
+real, and deserves our consideration. Processes, nodes, NICs, switches,
+networks, and globally distributed networks do fail, and the economic
+consequences are real. Moreover, for each of these failure staories 
+
+Failures can occur in systems which are stable for months, or be triggered as a
+part of routine upgrades or emergency maintenance. The consequences of these
+outages can range from increased latency and temporary unavailability to
+inconsistency, corruption, and data loss. Split-brain is not an academic
+concern: it happens to all kinds of systems--sometimes for *days on end*. 
+
+On the other hand, some networks really *are* reliable. I've spoken with
+engineers at major financial firms, and they report that despite putting a
+great deal of effort into designing partition-tolerant systems, their networks
+rarely, if ever, partitioned. Cautious engineering and spending more money can
+prevent outages.
+
+However, not all organizations can afford the cost or operational complexity of
+highly reliable networks. From Google and Amazon to one-man startups;
+partitions arise in networks of all shapes and sizes--and often for
+unpredictable reasons. It's worth considering the risk *before* they
+occur--because it's much easier to design a partition-tolerant system on a
+whiteboard than to redesign and transition a complex system in your production
+environment.
