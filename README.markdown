@@ -91,7 +91,7 @@ of real-world partition behavior, we'd like to bring these stories together.
 **PB Question: any reason to keep this separate from WAN failures? Can we
 reclassify it**
 
-<div class="accordion">
+
 <h3>Microsoft Datacenter Study</h3>
 
 Researchers at Microsoft Research <a
@@ -105,9 +105,9 @@ communication partitions is challenging, they estimate a median packet loss of
 network redundancy improves median traffic by only 43%; that is, network
 redundancy does not eliminate many common causes of network failure.
 
-</div>
 
-<div class="accordion">
+
+
 <h3>HP Enterprise Managed Networks</h3>
 
 A joint study between researchers at University of California, San Diego and HP
@@ -119,11 +119,11 @@ support tickets (14% of which were of the highest priority level), with a
 median incident duration of 2 hours and 45 minutes for the highest priority
 tickets and and a median duration of 4 hours 18 minutes for all priorities.
 
-</div>
+
 
 **PB note: we can move this**
 
-<div class="accordion">
+
 <h3>Google Chubby</h3>
 
 Google's <a
@@ -134,9 +134,9 @@ several clusters. Of the nine outages that lasted greater than 30 seconds, four
 were caused by network maintenance and two were caused by "suspected network
 connectivity problems."
 
-</div>
 
-<div class="accordion">
+
+
 <h3>Google's Design Lessons from Distributed Systems</h3>
 
 In <a
@@ -155,7 +155,7 @@ resolving conflicting updates to multiple versions of a piece of state" as
 being useful for "reconciling replicated state in different data centers after
 repairing a network partition".
 
-<div class="accordion">
+
 <h3>Amazon Dynamo</h3>
 
 Amazon's <a
@@ -165,11 +165,11 @@ consideration. Specifically, the authors note that they rejected designs from
 "traditional replicated relational database systems" because they "are not
 capable of handling network partitions."
 
-</div>
+
 
 ## Power failure
 
-<div class="accordion">
+
 <h3>Fog Creek</h3>
 
 As Microsoft's SIGCOMM paper suggests, redundancy doesn't always prevent link
@@ -181,11 +181,11 @@ rack, but remained consistent and available for most users. However, the
 That failure isolated the two neighboring racks from one another, <b>taking
 down all On Demand services.</b>
 
-</div>
+
 
 ## Network loops
 
-<div class="accordion">
+
 <h3>Fog Creek</h3>
 
 <a href="http://status.fogcreek.com/2012/05/may-5-6-network-maintenance-post-mortem.html">During a planned network reconfiguration to improve reliability</a>, Fog Creek suddenly lost access to their network.
@@ -204,9 +204,9 @@ According to the BPDU standard, the flood *shouldn't have happened*. Unexpected
 behavior outside the rules of the system caused <b>two hours of total service
 unavailability.</b>
 
-</div>
 
-<div class="accordion">
+
+
 <h3>Github</h3>
 
 In an effort to address high latencies caused by a daisy-chained network
@@ -223,11 +223,11 @@ disabled, which caused 18 minutes of hard downtime. The problem was later
 traced to a firmware bug preventing switches from updating their MAC address
 caches correctly, forcing them to broadcast most packets to every interface. 
 
-</div>
+
 
 ## Congestion and packet loss
 
-<div class="accordion">
+
 <h3>Freistil IT</h3>
 
 Freistil IT hosts their servers with a colocation/managed-hosting provider.
@@ -249,9 +249,9 @@ split-brain undetected:
 Repairing that inconsistency led to a "brief overload of the web nodes because
 of a short surge in network traffic".
 
-</div>
 
-<div class="accordion">
+
+
 <h3>BNX2 drivers</h3>
 
 Unreliable NIC hardware or drivers are implicated in a broad array of
@@ -297,7 +297,7 @@ particularly thorny issue for ESX users with iSCSI-backed storage.
 **PB note: should we explain what we mean by "internal?" Should we pair this
 with the earlier stuff from Microsoft?**
 
-<div class="accordion">
+
 <h3>RelateIQ</h3>
 
 In a comment on <a href="http://aphyr.com/posts/284-call-me-maybe-mongodb">Call
@@ -316,9 +316,9 @@ on EC2 are common. While most folks report that running their own hardware is
 more reliable, I know at least one company which sees their MongoDB cluster
 fail over on a weekly basis.
 
-</div>
 
-<div class="accordion">
+
+
 <h3>RabbitMQ and ElasticSearch on Windows Azure</h3>
 
 There are a few <a
@@ -331,9 +331,9 @@ href="https://groups.google.com/forum/?fromgroups#!topic/elasticsearch/muZtKij3n
 split-brain</a>, but reports about Azure's network reliability are harder to
 come by than EC2 at this time.
 
-</div>
 
-<div class="accordion">
+
+
 <h3>A Novell Cluster split-brain</h3>
 
 Intermittent failures can lead to long outages. In this <a
@@ -344,9 +344,9 @@ The secondary node eventually killed itself, and the primary (though still
 running) was no longer reachable by other hosts on the network. The post goes
 on to detail a series of network partition events correlated with backup jobs.
 
-</div>
 
-<div class="accordion">
+
+
 <h3>Mnesia on EC2</h3>
 
 EC2 outages can leave two nodes connected to the internet, but unable to see
@@ -359,9 +359,9 @@ the operations team just nuked one side of the cluster. They conclude: "the
 experience has convinced us that we need to prioritize up our network partition
 recovery strategy".
 
-</div>
 
-<div class="accordion">
+
+
 <h3>CityCloud GlusterFS partitions</h3>
 
 After a scheduled upgrade, <a
@@ -380,7 +380,7 @@ pairs:
 > pair. There were also some cases of data corruption in the VMs filesystems
 > due to VMs going down in an uncontrolled way.
 
-<div class="accordion">
+
 <h3>Pacemaker/Heartbeat split-brain</h3>
 
 This <a
@@ -392,9 +392,9 @@ emails failed to dispatch due to DNS resolution failure, and nodes reported
 "network unreachable". In this case the impact appears to have been minimal, in
 part because the split-brained application was a mostly-stateless proxy.
 
-</div>
 
-<div class="accordion">
+
+
 <h3>VoltDB split-brain on EC2</h3>
 
 One VoltDB user reports <a
@@ -404,9 +404,9 @@ their network logs included no dropped packets. Because this cluster had not
 enabled split-brain detection, both nodes ran as causally isolated primaries,
 causing significant data loss. 
 
-</div>
 
-<div class="accordion">
+
+
 <h3>EC2 instability causing MongoDB and ElasticSearch unavailability</h3>
 
 Network disruptions in EC2 are well-known, but unevenly distributed. For
@@ -419,9 +419,9 @@ convergence resulted in 30-45 minute outages and a corrupted index for
 ElasticSearch. As problems escalated, the outages occurred "2 to 4 times a
 day".
  
-</div>
 
-<div class="accordion">
+
+
 <h3>ElasticSearch discovery failure</h3>
 
 <a
@@ -433,9 +433,9 @@ name. Since ElasticSearch doesn't demote primaries automatically, split-brain
 persisted until administrators intervened. Upping the discovery timeout to 15
 seconds resolved the issue.
 
-</div>
 
-<div class="accordion">
+
+
 <h3>DRBD split-brain</h3>
 
 When a two-node cluster partitions, there are no cases in which a node can
@@ -446,9 +446,9 @@ to divergent filesystem-level changes. The only real option for resolving these
 kinds of conflicts is to discard all writes not made to a selected component of
 the cluster.
 
-</div>
 
-<div class="accordion">
+
+
 <h3>Github</h3>
 
 On <a href="https://github.com/blog/1364-downtime-last-saturday">December 22nd,
@@ -481,11 +481,11 @@ or bring the node online in isolation to determine its state. Recovering those
 downed fileserver pairs took five hours, during which Github was significantly
 degraded.
 
-</div>
+
 
 ## WAN failures
 
-<div class="accordion">
+
 <h3>PagerDuty</h3>
 
 PagerDuty designed their system to remain available in the face of node,
@@ -503,9 +503,9 @@ mind, including the loss of an entire datacenter, correlated failures in two
 Amazon AZs caused 18 minutes of unavailability, dropping inbound API requests
 and delaying queued pages until quorum was re-established.
 
-</div>
 
-<div class="accordion">
+
+
 <h3>An anonymous hosting provider</h3>
 
 One company running 100-200 nodes on a major hosting provider reports that in a
@@ -516,10 +516,10 @@ managed-hosting network. The failures caused unavailability, but because this
 company wasn't running any significant distributed systems between those
 networks, there were no major inconsistencies.
 
-</div>
 
 
-<div class="accordion">
+
+
 <h3>CENIC Study</h3>
 
 Researchers at the University of California, San Diego <a
@@ -533,9 +533,9 @@ partition duration ranged from 6 minutes for software-related failures
 to over 8.2 hours for hardware-related failures (median 2.7 and 32
 minutes; 95th percentile of 19.9 minutes and 3.7 days).
 
-</div>
 
-<div class="accordion">
+
+
 <h3>Yahoo! PNUTS/Sherpa</h3>
 <a
 href="http://www.mpi-sws.org/~druschel/courses/ds/papers/cooper-pnuts.pdf">Yahoo!
@@ -555,12 +555,12 @@ was too restrictive for many applications:
 > override procedures and local data replication, but in many circumstances,
 > applications need a relaxed approach."
 
-</div>
+
 
 
 ## Global routing failure
 
-<div class="accordion">
+
 <h3>Cloudflare</h3>
 
 CloudFlare runs 23 globally distributed datacenters with redundant network
@@ -588,9 +588,9 @@ takes is complex, and calling on-site engineers to find and reboot routers by
 hand takes time. Recovery began in 30 minutes and was complete after an hour of
 unavailability.
 
-</div>
 
-<div class="accordion">
+
+
 <h3>Global BGP Outages</h3>
 
 There have been several global Internet outages related to BGP
@@ -609,11 +609,11 @@ href="http://www.renesys.com/2005/12/internetwide-nearcatastrophela/">in
 *entire* internet), and <a
 href="http://merit.edu/mail.archives/nanog/1997-04/msg00380.html">in 1997</a>.
 
-</div>
+
 
 ## Misconfiguration and Bugs
 
-<div class="accordion">
+
 <h3>Juniper Routing Bug</h3>
 
 The software running inside network hardware (i.e., firmware) is subject to
@@ -624,9 +624,9 @@ outages</a> in Level 3 Communications's networking backbone. This subsequently
 knocked services like Time Warner Cable and RIM BlackBerry, and several UK
 internet service providers offline.
 
-</div>
 
-<div class="accordion">
+
+
 <h3>AWS EBS outage</h3>
 
 On April 21st, 2011, <a href="http://aws.amazon.com/message/65648/">Amazon's
@@ -669,7 +669,7 @@ between 16 and 60 hours of unavailability for their users' databases.
 
 ## CPU and GC pauses
 
-<div class="accordion">
+
 <h3>Bonsai.io</h3>
 
 Not all partitions involve the network hardware directly; some are caused by
@@ -680,9 +680,9 @@ cluster, but it failed to converge, partitioning itself into two independent
 components. The failure led to <b>20 minutes of hard downtime, and six hours of
 degraded service.</b>
 
-</div>
 
-<div class="accordion">
+
+
 <h3>Searchbox.io</h3>
 
 Stop-the-world garbage collection can force application latencies on the order
@@ -694,9 +694,9 @@ two simultaneous primaries, leading to inconsistency and downtime. Configuring
 distributed systems is difficult, and benign omissions can lead to serious
 consequences.
 
-</div>
 
-<div class="accordion">
+
+
 <h3>Github</h3>
 
 Github relies heavily on Pacemaker and Heartbeat; programs which coordinate
@@ -751,9 +751,9 @@ they note in the postmortem:
 
 Distributed systems are *hard*.
 
-</div>
 
-<div class="accordion">
+
+
 <h3>Mystery RabbitMQ partitions</h3>
 
 Sometimes, nobody knows why the system partitioned. This <a
@@ -764,4 +764,4 @@ partition detection timeout to 2 minutes reduced the frequency of partitions,
 but didn't prevent them altogether
 . 
 
-</div>
+
