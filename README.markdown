@@ -679,4 +679,4 @@ In practice, some networks really *are* reliable. Engineers at major financial f
 However, not all organizations can afford the cost or operational complexity of
 highly reliable networks. And, from Google and Amazon, who operate commodity and/or low-cost hardware due to sheer scale, to one-man startups built on shoestring budgets, failures are a reality. It's important to consider partitions *before* they occur--because it's much easier to make decisions about behavior under partition on a whiteboard than to redesign, re-engineer, and upgrade a complex system in production environment, especially when it's throwing 404 errors at your users. For some applications, giving 404 is okay, but know when it's not, and plan for partitions.
 
-Have an answer to the question: *when my servers can't talk, what happens to my application?* Based on what we've seen here, your network will ask you.
+Have an answer to the question: *when my servers can't talk, what happens to my application?* Based on what we've seen, your network is going to ask you.
