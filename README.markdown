@@ -21,6 +21,7 @@ $(document).ready(function() {
 
 </script>
 
+*I've been discussing <a href="/tags/jepsen">Jepsen</a> and partition tolerance with the inimitable <a href="http://www.bailis.org/">Peter Bailis</a>, and he was kind enough to join me in writing this post. You may be interested in his upcoming work on <a href="http://arxiv.org/pdf/1302.0309.pdf">Highly Available Transactions</a>.*
 
 Partitions are a contentious matter. Some people claim that modern IP networks
 are reliable, and that we are too concerned with designing for *theoretical*
