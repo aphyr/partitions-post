@@ -308,6 +308,12 @@ pairs:
 
 ## Datacenter network failures
 
+Individual interfaces can fail, but those typically appear as single-node
+outages. A more dangerous problem are failures somewhere in the physical
+network. Switches are subject to power failure, misconfiguration, firmware
+bugs, topology changes, cable failures, and malicious traffic. Their failure
+modes are accordingly diverse:
+
 ### Power failure on both redundant switches
 
 As Microsoft's SIGCOMM paper suggests, redundancy doesn't always prevent link
@@ -424,7 +430,12 @@ degraded.
 
 ## Managed hosting providers
 
-### Freistil IT
+Running your own datacenter can be cheaper and more reliable, but it also means
+you have to be a network and server administrator. What about managed hosting
+providers, which rent dedicated or virtualized hardware to users, and take care
+of the network and hardware setup for you?
+
+### An undetected GlusterFS split-brain
 
 Freistil IT hosts their servers with a colocation/managed-hosting provider.
 Their monitoring system <a
@@ -440,33 +451,35 @@ split-brain undetected:
 > that this was caused by a split-brain situation on the storage cluster
 > “stor02″ where changes made on node “stor02b” weren’t reflected on “stor02a”
 > and the self-heal algorithm built into the Gluster filesystem was not able to
-> resolve this inconsistency between the two data sets."
+> resolve this inconsistency between the two data sets.
 
 Repairing that inconsistency led to a "brief overload of the web nodes because
 of a short surge in network traffic".
 
 
+### An anonymous hosting provider
+
+From what I can gather informally, *all* the major managed hosting providers
+experience regular network failures. One company running 100-200 nodes on a
+major hosting provider reported that in a 90-day period the provider's network
+went through five distinct periods of partitions. Some cut off connectivity
+between the provider's cloud network and the public internet, and others
+separated the cloud network from the provider's internal managed-hosting
+network. The failures caused unavailability, but because this company wasn't
+running any significant distributed systems between those networks, there were
+no major inconsistencies.
+
+
 ### Pacemaker/Heartbeat split-brain
 
-This <a
-href="http://readlist.com/lists/lists.linux-ha.org/linux-ha/6/31964.html">post
-to Linux-HA details a long-running partition between two heartbeat pairs</a>,
-in which two Linode VMs have each declared the other dead and claimed the
+One post to Linux-HA <a
+href="http://readlist.com/lists/lists.linux-ha.org/linux-ha/6/31964.html">details a long-running partition between a Heartbeat pair</a>,
+in which two Linode VMs have each declared the other dead and claimed a
 shared IP for themselves. Successive posts suggest further network problems:
 emails failed to dispatch due to DNS resolution failure, and nodes reported
 "network unreachable". In this case the impact appears to have been minimal, in
-part because the split-brained application was a mostly-stateless proxy.
+part because the partitioned application was just a proxy.
 
-
-### An anonymous hosting provider
-
-One company running 100-200 nodes on a major hosting provider reports that in a
-90-day period their provider's network experienced five distinct partitions.
-Some cut off connectivity between the provider's cloud network and the public
-internet, and others separated the cloud network from the provider's internal
-managed-hosting network. The failures caused unavailability, but because this
-company wasn't running any significant distributed systems between those
-networks, there were no major inconsistencies.
 
 
 
