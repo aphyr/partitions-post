@@ -482,10 +482,13 @@ part because the partitioned application was just a proxy.
 
 
 
+## Cloud providers
 
-## Cloud environments
+Large-scale virtualized environments are notorious for transient latency,
+dropped packets, and full-on partitions, often affecting a particular kernel or
+availability zone. Sometimes the failures occur between specific subsections of the provider's datacenter, revealing internal planes of cleavage.
 
-### RelateIQ
+### An isolated MongoDB primary on EC2
 
 In a comment on <a href="http://aphyr.com/posts/284-call-me-maybe-mongodb">Call
 me maybe: MongoDB</a>, Scott Bessler observed exactly the same failure mode I
@@ -500,12 +503,9 @@ demonstrated in the Jepsen post:
 This partition caused <b>two hours of write loss</b>. From my conversations
 with large-scale MongoDB users, I gather that network events causing failover
 on EC2 are common. Simultaneous primaries accepting writes for *multiple days*
-are not unknown. While most folks report that running their own hardware is
-more reliable, I know at least one company which sees their MongoDB cluster
-fail over on a weekly basis.
+are not unknown. 
 
-
-### Mnesia on EC2
+### Mnesia split-brain on EC2
 
 EC2 outages can leave two nodes connected to the internet, but unable to see
 each other. This type of partition is especially dangerous, as writes to both
@@ -520,11 +520,11 @@ recovery strategy".
 
 ### EC2 instability causing MongoDB and ElasticSearch unavailability
 
-Network disruptions in EC2 are well-known, but unevenly distributed. For
-instance, <a
+Network disruptions in EC2 can affect only certain groups of nodes.
+For instance, <a
 href="https://forums.aws.amazon.com/thread.jspa?messageID=454155">this report
 of a total partition between the frontend and backend stacks</a> states that
-the web servers lose their connections to all backend instances for a few
+their the web servers lose their connections to all backend instances for a few
 seconds, several times a month. Even though the disruptions were short, cluster
 convergence resulted in 30-45 minute outages and a corrupted index for
 ElasticSearch. As problems escalated, the outages occurred "2 to 4 times a
@@ -541,13 +541,13 @@ enabled split-brain detection, both nodes ran as causally isolated primaries,
 causing significant data loss. 
 
 
-### ElasticSearch discovery failure
+### ElasticSearch discovery failure on EC2
 
 <a
 href="http://elasticsearch-users.115913.n3.nabble.com/EC2-discovery-leads-to-two-masters-td3239318.html">Another
-EC2 split-brain</a>: a two-node cluster on "roughly 1 out of 10 startups"
-failed to converge when discovery messages took longer than three seconds to
-complete. As a result, both nodes would start as masters with the same cluster
+EC2 split-brain</a>: a two-node cluster failed to converge on "roughly 1 out of
+10 startups" when discovery messages took longer than three seconds to
+exchange. As a result, both nodes would start as masters with the same cluster
 name. Since ElasticSearch doesn't demote primaries automatically, split-brain
 persisted until administrators intervened. Upping the discovery timeout to 15
 seconds resolved the issue.
@@ -560,10 +560,10 @@ href="http://social.msdn.microsoft.com/Forums/en-US/WAVirtualMachinesforWindows/
 reports of Windows Azure partitions, such as <a
 href="http://rabbitmq.1065348.n5.nabble.com/Instable-HA-cluster-td24690.html">this
 account</a> of a RabbitMQ cluster which entered split-brain on a weekly basis.
-We also have reports of <a
+There's also this account of <a
 href="https://groups.google.com/forum/?fromgroups#!topic/elasticsearch/muZtKij3nUw">ElasticSearch
-split-brain</a>, but reports about Azure's network reliability are harder to
-come by than EC2 at this time.
+split-brain</a>, but since Azure is a relative newcomer compared to EC2, descriptions of its network reliability are scant.
+
 
 ### AWS EBS outage
 
@@ -602,11 +602,9 @@ When one AZ fails, RDS is designed to fail over to a different AZ. However,
 > data loss, and manual intervention was required."
 
 The multi-AZ correlated failure caused widespread outages for clients relying
-on AWS. <a href="https://status.heroku.com/incidents/151">Heroku reported</a>
-between 16 and 60 hours of unavailability for their users' databases.
-
-
-
+on AWS. For example, <a href="https://status.heroku.com/incidents/151">Heroku
+reported</a> between 16 and 60 hours of unavailability for their users'
+databases.
 
 
 ## WAN failures
