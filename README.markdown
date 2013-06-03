@@ -2,15 +2,15 @@
 // Remember this script tag
 var scripts = document.getElementsByTagName('script');
 var script = scripts[scripts.length - 1];
-  console.log("hi");
 var header = 'h2';
 
 // When loaded, post-process document:
 $(document).ready(function() {
   var article = $(script).parent();
   var sections = article.children(header);
-  sections.slice(0, -2).each(function() {
-    $(this).css({cursor, 'pointer'});
+  sections.slice(0, -1).each(function() {
+    $(this).css({cursor: 'pointer'});
+    $(this).prepend("➤ ");
     $(this).nextUntil(header).wrapAll('<div class="more" style="display: none" />');
     $(this).click(function() {
       $(this).next('.more').slideToggle();
@@ -433,6 +433,19 @@ split-brain undetected:
 Repairing that inconsistency led to a "brief overload of the web nodes because
 of a short surge in network traffic".
 
+
+### Pacemaker/Heartbeat split-brain
+
+This <a
+href="http://readlist.com/lists/lists.linux-ha.org/linux-ha/6/31964.html">post
+to Linux-HA details a long-running partition between two heartbeat pairs</a>,
+in which two Linode VMs have each declared the other dead and claimed the
+shared IP for themselves. Successive posts suggest further network problems:
+emails failed to dispatch due to DNS resolution failure, and nodes reported
+"network unreachable". In this case the impact appears to have been minimal, in
+part because the split-brained application was a mostly-stateless proxy.
+
+
 ### An anonymous hosting provider
 
 One company running 100-200 nodes on a major hosting provider reports that in a
@@ -446,17 +459,6 @@ networks, there were no major inconsistencies.
 
 
 ## Cloud environments
-
-### Pacemaker/Heartbeat split-brain
-
-This <a
-href="http://readlist.com/lists/lists.linux-ha.org/linux-ha/6/31964.html">post
-to Linux-HA details a long-running partition between two heartbeat pairs</a>,
-in which two Linode VMs have each declared the other dead and claimed the
-shared IP for themselves. Successive posts suggest further network problems:
-emails failed to dispatch due to DNS resolution failure, and nodes reported
-"network unreachable". In this case the impact appears to have been minimal, in
-part because the split-brained application was a mostly-stateless proxy.
 
 ### RelateIQ
 
