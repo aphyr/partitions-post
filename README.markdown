@@ -70,9 +70,15 @@ real-world partition behavior, we'd like to bring these stories together.
 
 ## Hints from big companies
 
-### Microsoft Datacenter Study
+To start off, we'd like to explore the evidence we have from the big players in
+distributed systems: companies running globally distributed infrastructure with
+hundreds of thousands of nodes. Because of their scale, these reports tell us
+the most about the *mean* probability of failure--and their publications often
+hint at the importance of partitions in their experience.
 
-Researchers at Microsoft Research <a
+### The Microsoft datacenter Study
+
+Microsoft Research <a
 href="http://research.microsoft.com/en-us/um/people/navendu/papers/sigcomm11netwiser.pdf">studied
 the behavior</a> of network failures in several of their datacenters. They
 found an average failure rate of 5.2 devices per day and 40.8 links per day
@@ -82,7 +88,6 @@ communication partitions is challenging, they estimate a median packet loss of
 59,000 packets per failure. Perhaps more concerning is their finding that
 network redundancy improves median traffic by only 43%; that is, network
 redundancy does not eliminate many common causes of network failure.
-
 
 
 ### HP Enterprise Managed Networks
@@ -97,7 +102,7 @@ median incident duration of 2 hours and 45 minutes for the highest priority
 tickets and and a median duration of 4 hours 18 minutes for all priorities.
 
 
-### <h3>Google Chubby</h3>
+### Google Chubby
 
 Google's <a
 href="http://research.google.com/archive/chubby-osdi06.pdf">paper</a>
@@ -136,6 +141,7 @@ consideration. Specifically, the authors note that they rejected designs from
 "traditional replicated relational database systems" because they "are not
 capable of handling network partitions."
 
+
 ### Yahoo! PNUTS/Sherpa
 <a
 href="http://www.mpi-sws.org/~druschel/courses/ds/papers/cooper-pnuts.pdf">Yahoo!
@@ -156,8 +162,8 @@ was too restrictive for many applications:
 > applications need a relaxed approach."
 
 
-## GC, Disk IO, and CPU load
 
+## GC, Disk IO, and CPU load
 
 ### Bonsai.io
 
