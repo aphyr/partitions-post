@@ -22,11 +22,8 @@ $(document).ready(function() {
 </script>
 
 *I've been discussing <a href="/tags/jepsen">Jepsen</a> and partition
- tolerance with the <a href="http://www.bailis.org/">Peter Bailis</a>,
- who I invited to join me in writing this post. You may be interested
- in his upcoming work on <a
- href="http://www.bailis.org/blog/hat-not-cap-introducing-highly-available-transactions/">Highly
- Available Transactions</a>.*
+ tolerance with <a href="http://www.bailis.org/">Peter Bailis</a>,
+ who I invited to join me in writing this post.*
 
 
 Partitions are a contentious matter. Some claim that modern IP
@@ -612,14 +609,16 @@ minutes; 95th percentile of 19.9 minutes and 3.7 days).
 
 ## Global routing failure
 
+Some network failures take place on a globally distributed scale.
+
 ### Cloudflare
 
-CloudFlare runs 23 globally distributed datacenters with redundant network
-paths and anycast failover. <a
+CloudFlare runs 23 datacenters with redundant network paths and anycast
+failover. <a
 href="http://blog.cloudflare.com/todays-outage-post-mortem-82515">In response
 to a DDoS attack against one of their customers</a>, their operations team
 deployed a new firewall rule to drop packets of a specific size. Juniper's
-FlowSpec protocol propagated that rule to all CloudFlare edge routers, where:
+FlowSpec protocol propagated that rule to all CloudFlare edge routers, but then--
 
 > What should have happened is that no packet should have matched that rule
 > because no packet was actually that large. What happened instead is that the
@@ -634,22 +633,21 @@ reboot automatically, and inaccessible management ports.
 > overloaded their resources.
 
 CloudFlare monitors their network carefully; the ops team had immediate
-visibility of the failure. However, coordinating globally distributed systems
+visibility into the failure. However, coordinating globally distributed systems
 takes is complex, and calling on-site engineers to find and reboot routers by
-hand takes time. Recovery began in 30 minutes and was complete after an hour of
-unavailability.
+hand takes time. Recovery took 30 minutes to begin, and was complete after an
+hour of unavailability.
 
-### Juniper Routing Bug
+### Juniper routing bug
 
-The software running inside network hardware (i.e., firmware) is subject to
-bugs just like the rest of computer software. A bug in a router upgrade in
-Juniper Networks's routers <a
+A firmware bug introduced as a part of an upgrade in Juniper Networks's routers
+<a
 href="http://www.eweek.com/c/a/IT-Infrastructure/Bug-in-Juniper-Router-Firmware-Update-Causes-Massive-Internet-Outage-709180/">caused
 outages</a> in Level 3 Communications's networking backbone. This subsequently
 knocked services like Time Warner Cable and RIM BlackBerry, and several UK
 internet service providers offline.
 
-### Global BGP Outages
+### Global BGP outages
 
 There have been several global Internet outages related to BGP
 misconfiguration. Notably, in 2008, Pakistan Telecom, responding to a
@@ -679,4 +677,6 @@ Partitions can occur at any time. Network outages can suddenly arise in systems 
 In practice, some networks really *are* reliable. Engineers at major financial firms report that, despite putting serious effort into designing systems that gracefully tolerate partitions, their networks rarely, if ever, exhibit partitioning behavior. Moreover, cautious engineering and lots of money can prevent outages.
 
 However, not all organizations can afford the cost or operational complexity of
-highly reliable networks. And, from Google and Amazon, who operate commodity and/or low-cost hardware due to sheer scale, to one-man startups built on shoestring budgets, failures are a reality. It's important to consider partitions *before* they occur--because it's much easier to make decisions about behavior under partition on a whiteboard than to redesign, re-engineer, and upgrade a complex system in production environment, especially when it's throwing 404 errors at your users. For some applications, giving 404 is okay, but know when it's not, and plan for partitions. Have an answer to the question: *when my servers can't talk, what happens to my application?* Based on what we've seen here, our network will likely test you on it.
+highly reliable networks. And, from Google and Amazon, who operate commodity and/or low-cost hardware due to sheer scale, to one-man startups built on shoestring budgets, failures are a reality. It's important to consider partitions *before* they occur--because it's much easier to make decisions about behavior under partition on a whiteboard than to redesign, re-engineer, and upgrade a complex system in production environment, especially when it's throwing 404 errors at your users. For some applications, giving 404 is okay, but know when it's not, and plan for partitions.
+
+Have an answer to the question: *when my servers can't talk, what happens to my application?* Based on what we've seen here, your network will ask you.
