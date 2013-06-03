@@ -165,32 +165,34 @@ was too restrictive for many applications:
 
 ## GC, Disk IO, and CPU load
 
-### Bonsai.io
+Not all partitions originate in the physical network. Some dropped or delayed
+messages are a consequence of crashes, race conditions, OS scheduler latency,
+or overloaded processes. The important thing is that the system delayed or
+dropped messages--which can happen at any level of the stack.
 
-Not all partitions involve the network hardware directly; some are caused by
-the software's inability to process messages. Bonsai.io <a
+### High CPU use
+
+Bonsai.io <a
 href="http://www.bonsai.io/blog/2013/03/05/outage-post-mortem">discovered</a>
 high CPU use and load averages on an ElasticSearch node. They restarted the
 cluster, but it failed to converge, partitioning itself into two independent
-components. The failure led to <b>20 minutes of hard downtime, and six hours of
-degraded service.</b>
+components. The failure led to 20 minutes of hard downtime, and six hours of
+degraded service.
 
 
-### Searchbox.io
+### Long GC pauses
 
 Stop-the-world garbage collection can force application latencies on the order
 of seconds to minutes. As Searchbox.io <a
 href="http://blog.searchbox.io/blog/2013/03/03/january-postmortem">observed</a>,
-GC pressure in an ElasticSearch cluster caused secondary nodes to declare a
+GC pressure in an ElasticSearch cluster can cause secondary nodes to declare a
 primary dead and to attempt a new election. Because their configuration used a low value of `zen.minimum_master_nodes`, ElasticSearch was able to elect
-two simultaneous primaries, leading to inconsistency and downtime. Configuring
-distributed systems is difficult, and benign omissions can lead to serious
-consequences.
+two simultaneous primaries, leading to inconsistency and downtime.
 
 
-### Github
+### MySQL overload and a Pacemaker segfault
 
-Github relies heavily on Pacemaker and Heartbeat; programs which coordinate
+Github relies heavily on Pacemaker and Heartbeat: programs which coordinate
 cluster resources between nodes. They use Percona Replication Manager, a
 resource agent for Pacemaker, to replicate their MySQL database between three
 nodes.
@@ -229,7 +231,7 @@ the problem.
 
 The partition caused inconsistency in the MySQL database--both internally and
 between MySQL and other datastores, like Redis. Because foreign key
-relationships were no longer valid, Github showed private repositories to the
+relationships were not consistent, Github showed private repositories to the
 wrong user's dashboards, and incorrectly routed some newly created repos.
 
 Github thought carefully about their infrastructure design, and were still
@@ -253,7 +255,7 @@ partitions. <a href="http://www.spinics.net/lists/netdev/msg210485.html">Marc
 Donges and Michael Chan</a> bring us a thrilling report of the BCM5709 chipset
 abruptly dropping inbound, *but not outbound* packets to a machine. Because
 inbound packets were dropped, the node was unable to service requests. Because
-it could still send heartbeats to its hot spare via keepalived, the hot spare
+it could still send heartbeats to its hot spare via keepalived, the spare
 considered it alive and refused to take over. The service was unavailable for
 five hours, and did not recover without a reboot.
 
@@ -263,11 +265,6 @@ reporting the same symptoms with the BCM5709S chipset on Linux
 2.6.32-41squeeze2. Despite pulling commits from mainline which supposedly fixed
 a similar set of issues with the bnx2 driver, they were unable to resolve the
 issue until 2.6.38.
-
-The bnx2 driver could also cause transient or flapping network failures, as
-described in this <a
-href="http://elasticsearch-users.115913.n3.nabble.com/Cluster-Split-Brain-td3333510.html">ElasticSearch
-split brain report</a>.
 
 Since Dell shipped a large number of servers with the Broadcom BCM5709, the
 impact of these firmware bugs was widely felt. For instance, the 5709 had a bug
@@ -280,19 +277,22 @@ Dell's top-of-rack switches), which, by default, spewed PAUSE frames at *every*
 interface trying to communicate with the offending 5709 NIC. This led to
 cascading failures on entire switches or networks.
 
-The Broadcom 57711 is also <a
-href="http://communities.vmware.com/thread/284628?start=0&tstart=0">notorious</a>
+The bnx2 driver could also cause transient or flapping network failures, as
+described in this <a
+href="http://elasticsearch-users.115913.n3.nabble.com/Cluster-Split-Brain-td3333510.html">ElasticSearch
+split brain report</a>. Meanwhile, the the Broadcom 57711 was
+<ahref="http://communities.vmware.com/thread/284628?start=0&tstart=0">notorious</a>
 for causing extremely high latencies under load with jumbo frames; a
 particularly thorny issue for ESX users with iSCSI-backed storage.
 
 
-### CityCloud GlusterFS partitions
+### A GlusterFS partition caused by a driver bug
 
 After a scheduled upgrade, <a
 href="https://www.citycloud.eu/cloud-computing/post-mortem/">CityCloud noticed
-unexpected network failures in two distinct GlusterFS pairs</a>, followed by a
-third. Suspecting link aggregation, CityCloud disabled the feature on their
-switches and allowed self-heal operations to proceed.
+unexpected network failures</a> in two distinct GlusterFS pairs</a>, followed
+by a third. Suspecting link aggregation, CityCloud disabled the feature on
+their switches and allowed self-heal operations to proceed.
 
 Roughly 12 hours later, the network failures returned on one node. CityCloud
 identified a particular driver issue and updated the downed node, returning
