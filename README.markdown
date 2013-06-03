@@ -514,8 +514,8 @@ planes of cleavage.
 ### An isolated MongoDB primary on EC2
 
 In a comment on <a href="http://aphyr.com/posts/284-call-me-maybe-mongodb">Call
-me maybe: MongoDB</a>, Scott Bessler observed exactly the same failure mode I
-demonstrated in the Jepsen post:
+me maybe: MongoDB</a>, Scott Bessler observed exactly the same failure mode
+Kyle demonstrated in the Jepsen post:
 
 > "Prescient. The w=safe scenario you show (including extra fails during
 > rollback/re-election) happened to us today when EC2 West region had network
@@ -523,8 +523,8 @@ demonstrated in the Jepsen post:
 > SECONDARIES in a 3 node replset. 2 hours later the old primary rejoined and
 > rolled back everything on the new primary. Our bad for not using w=majority."
 
-This partition caused <b>two hours of write loss</b>. From my conversations
-with large-scale MongoDB users, I gather that network events causing failover
+This partition caused <b>two hours of write loss</b>. From our conversations
+with large-scale MongoDB users, we gather that network events causing failover
 on EC2 are common. Simultaneous primaries accepting writes for *multiple days*
 are not unknown. 
 
