@@ -1,4 +1,25 @@
-# The network is reliable™
+<script type="text/javascript">
+// Remember this script tag
+var scripts = document.getElementsByTagName('script');
+var script = scripts[scripts.length - 1];
+  console.log("hi");
+var header = 'h2';
+
+// When loaded, post-process document:
+$(document).ready(function() {
+  var article = $(script).parent();
+  var sections = article.children(header);
+  sections.each(function() {
+    $(this).style("cursor: pointer;");
+    $(this).nextUntil(header).wrapAll('<div class="more" style="display: none" />');
+    $(this).click(function() {
+      $(this).next('.more').slideToggle();
+    });
+  });
+});
+
+
+</script>
 
 When the topic of distributed systems and partition tolerance arises,
 invariably one or more parties declares that in their extensive experience,
@@ -86,13 +107,9 @@ detailed postmortems or comprehensive surveys of availability are few and far
 between. In this post, as an effort towards a more open and honest discussion
 of real-world partition behavior, we'd like to bring these stories together.
 
-## Low-level failures
+## Hints from big companies
 
-**PB Question: any reason to keep this separate from WAN failures? Can we
-reclassify it**
-
-
-<h3>Microsoft Datacenter Study</h3>
+### Microsoft Datacenter Study
 
 Researchers at Microsoft Research <a
 href="http://research.microsoft.com/en-us/um/people/navendu/papers/sigcomm11netwiser.pdf">studied
@@ -107,8 +124,7 @@ redundancy does not eliminate many common causes of network failure.
 
 
 
-
-<h3>HP Enterprise Managed Networks</h3>
+### HP Enterprise Managed Networks
 
 A joint study between researchers at University of California, San Diego and HP
 Labs <a
@@ -120,11 +136,7 @@ median incident duration of 2 hours and 45 minutes for the highest priority
 tickets and and a median duration of 4 hours 18 minutes for all priorities.
 
 
-
-**PB note: we can move this**
-
-
-<h3>Google Chubby</h3>
+### <h3>Google Chubby</h3>
 
 Google's <a
 href="http://research.google.com/archive/chubby-osdi06.pdf">paper</a>
@@ -135,9 +147,7 @@ were caused by network maintenance and two were caused by "suspected network
 connectivity problems."
 
 
-
-
-<h3>Google's Design Lessons from Distributed Systems</h3>
+### Google's Design Lessons from Distributed Systems
 
 In <a
 href="http://www.cs.cornell.edu/projects/ladis2009/talks/dean-keynote-ladis2009.pdf">Design
@@ -156,7 +166,7 @@ being useful for "reconciling replicated state in different data centers after
 repairing a network partition".
 
 
-<h3>Amazon Dynamo</h3>
+### Amazon Dynamo
 
 Amazon's <a
 href="http://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf">Dynamo
@@ -165,12 +175,29 @@ consideration. Specifically, the authors note that they rejected designs from
 "traditional replicated relational database systems" because they "are not
 capable of handling network partitions."
 
+### Yahoo! PNUTS/Sherpa
+<a
+href="http://www.mpi-sws.org/~druschel/courses/ds/papers/cooper-pnuts.pdf">Yahoo!
+PNUTS/Sherpa</a> was designed as a distributed database operating out of
+multiple, geographically distinct sites. Originally, PNUTS supported a strongly
+consistent "timeline consistency" operation, with one master per data item.
+However, the developers <a
+href="http://developer.yahoo.com/blogs/ydn/sherpa-7992.html#4">noted that</a>,
+in the event of "network partitioning or server failures," this design decision
+was too restrictive for many applications:
+
+> The first deployment of Sherpa supported the timeline-consistency model —
+> namely, all replicas of a record apply all updates in the same order — and
+> has API-level features to enable applications to cope with asynchronous
+> replication. Strict adherence leads to difficult situations under network
+> partitioning or server failures. These can be partially addressed with
+> override procedures and local data replication, but in many circumstances,
+> applications need a relaxed approach."
 
 
 ## Power failure
 
-
-<h3>Fog Creek</h3>
+### Fog Creek
 
 As Microsoft's SIGCOMM paper suggests, redundancy doesn't always prevent link
 failure. <a href="http://status.fogcreek.com/2011/06/postmortem.html">When a
@@ -186,7 +213,7 @@ down all On Demand services.</b>
 ## Network loops
 
 
-<h3>Fog Creek</h3>
+### Fog Creek
 
 <a href="http://status.fogcreek.com/2012/05/may-5-6-network-maintenance-post-mortem.html">During a planned network reconfiguration to improve reliability</a>, Fog Creek suddenly lost access to their network.
 
@@ -205,9 +232,7 @@ behavior outside the rules of the system caused <b>two hours of total service
 unavailability.</b>
 
 
-
-
-<h3>Github</h3>
+### Github
 
 In an effort to address high latencies caused by a daisy-chained network
 topology, Github <a
@@ -225,34 +250,11 @@ caches correctly, forcing them to broadcast most packets to every interface.
 
 
 
-## Congestion and packet loss
-
-
-<h3>Freistil IT</h3>
-
-Freistil IT hosts their servers with a colocation/managed-hosting provider.
-Their monitoring system <a
-href="http://www.freistil.it/2013/02/post-mortem-network-issues-last-week/">alerted
-Freistil</a> to 50--100% packet loss, localized to a particular datacenter. The
-network failure, caused by a router firmware bug, returned the next day.
-Elevated packet loss caused the GlusterFS distributed filesystem to enter
-split-brain undetected:
-
-> Unfortunately, the malfunctioning network had caused additional problems
-> which we became aware of in the afternoon when a customer called our support
-> hotline because their website failed to deliver certain image files. We found
-> that this was caused by a split-brain situation on the storage cluster
-> “stor02″ where changes made on node “stor02b” weren’t reflected on “stor02a”
-> and the self-heal algorithm built into the Gluster filesystem was not able to
-> resolve this inconsistency between the two data sets."
-
-Repairing that inconsistency led to a "brief overload of the web nodes because
-of a short surge in network traffic".
 
 
 
 
-<h3>BNX2 drivers</h3>
+## Faulty NICs and drivers
 
 Unreliable NIC hardware or drivers are implicated in a broad array of
 partitions. <a href="http://www.spinics.net/lists/netdev/msg210485.html">Marc
@@ -292,77 +294,7 @@ for causing extremely high latencies under load with jumbo frames; a
 particularly thorny issue for ESX users with iSCSI-backed storage.
 
 
-## Internal partitions
-
-**PB note: should we explain what we mean by "internal?" Should we pair this
-with the earlier stuff from Microsoft?**
-
-
-<h3>RelateIQ</h3>
-
-In a comment on <a href="http://aphyr.com/posts/284-call-me-maybe-mongodb">Call
-me maybe: MongoDB</a>, Scott Bessler observed exactly the same failure mode I
-demonstrated in the Jepsen post:
-
-> "Prescient. The w=safe scenario you show (including extra fails during
-> rollback/re-election) happened to us today when EC2 West region had network
-> issues that caused a network partition that separated PRIMARY from its 2
-> SECONDARIES in a 3 node replset. 2 hours later the old primary rejoined and
-> rolled back everything on the new primary. Our bad for not using w=majority."
-
-This partition caused <b>two hours of write loss</b>. From my conversations
-with large-scale MongoDB users, I gather that network events causing failover
-on EC2 are common. While most folks report that running their own hardware is
-more reliable, I know at least one company which sees their MongoDB cluster
-fail over on a weekly basis.
-
-
-
-
-<h3>RabbitMQ and ElasticSearch on Windows Azure</h3>
-
-There are a few <a
-href="http://social.msdn.microsoft.com/Forums/en-US/WAVirtualMachinesforWindows/thread/b261e1aa-5ec4-42fc-80ef-5b50a0a00618">scattered
-reports of Windows Azure partitions, such as <a
-href="http://rabbitmq.1065348.n5.nabble.com/Instable-HA-cluster-td24690.html">this
-account</a> of a RabbitMQ cluster which entered split-brain on a weekly basis.
-We also have reports of <a
-href="https://groups.google.com/forum/?fromgroups#!topic/elasticsearch/muZtKij3nUw">ElasticSearch
-split-brain</a>, but reports about Azure's network reliability are harder to
-come by than EC2 at this time.
-
-
-
-
-<h3>A Novell Cluster split-brain</h3>
-
-Intermittent failures can lead to long outages. In this <a
-href="http://novell.support.cluster-services.free-usenet.eu/Split-Brain-Condition_T31677168_S1">Usenet
-post to novell.support.cluster-services</a>, an admin reports their two-node
-failover cluster running Novell NetWare experienced transient network outages.
-The secondary node eventually killed itself, and the primary (though still
-running) was no longer reachable by other hosts on the network. The post goes
-on to detail a series of network partition events correlated with backup jobs.
-
-
-
-
-<h3>Mnesia on EC2</h3>
-
-EC2 outages can leave two nodes connected to the internet, but unable to see
-each other. This type of partition is especially dangerous, as writes to both
-sides of a partitioned cluster can cause inconsistency and lost data. That's
-exactly what happened to <a
-href="http://dukesoferl.blogspot.com/2008/03/network-partition-oops.html?m=1">this
-Mnesia cluster</a>, which diverged overnight. Their state wasn't critical, so
-the operations team just nuked one side of the cluster. They conclude: "the
-experience has convinced us that we need to prioritize up our network partition
-recovery strategy".
-
-
-
-
-<h3>CityCloud GlusterFS partitions</h3>
+### CityCloud GlusterFS partitions
 
 After a scheduled upgrade, <a
 href="https://www.citycloud.eu/cloud-computing/post-mortem/">CityCloud noticed
@@ -381,62 +313,19 @@ pairs:
 > due to VMs going down in an uncontrolled way.
 
 
-<h3>Pacemaker/Heartbeat split-brain</h3>
+## Plain old network failures
 
-This <a
-href="http://readlist.com/lists/lists.linux-ha.org/linux-ha/6/31964.html">post
-to Linux-HA details a long-running partition between two heartbeat pairs</a>,
-in which two Linode VMs have each declared the other dead and claimed the
-shared IP for themselves. Successive posts suggest further network problems:
-emails failed to dispatch due to DNS resolution failure, and nodes reported
-"network unreachable". In this case the impact appears to have been minimal, in
-part because the split-brained application was a mostly-stateless proxy.
+### A Novell Cluster split-brain
 
+Intermittent failures can lead to long outages. In this <a
+href="http://novell.support.cluster-services.free-usenet.eu/Split-Brain-Condition_T31677168_S1">Usenet
+post to novell.support.cluster-services</a>, an admin reports their two-node
+failover cluster running Novell NetWare experienced transient network outages.
+The secondary node eventually killed itself, and the primary (though still
+running) was no longer reachable by other hosts on the network. The post goes
+on to detail a series of network partition events correlated with backup jobs.
 
-
-
-<h3>VoltDB split-brain on EC2</h3>
-
-One VoltDB user reports <a
-href="https://forum.voltdb.com/showthread.php?552-Nodes-stop-talking-to-each-other-and-form-independent-clusters">regular
-network failures causing nodes to causally diverge</a>, but also reported that
-their network logs included no dropped packets. Because this cluster had not
-enabled split-brain detection, both nodes ran as causally isolated primaries,
-causing significant data loss. 
-
-
-
-
-<h3>EC2 instability causing MongoDB and ElasticSearch unavailability</h3>
-
-Network disruptions in EC2 are well-known, but unevenly distributed. For
-instance, <a
-href="https://forums.aws.amazon.com/thread.jspa?messageID=454155">this report
-of a total partition between the frontend and backend stacks</a> states that
-the web servers lose their connections to all backend instances for a few
-seconds, several times a month. Even though the disruptions were short, cluster
-convergence resulted in 30-45 minute outages and a corrupted index for
-ElasticSearch. As problems escalated, the outages occurred "2 to 4 times a
-day".
- 
-
-
-
-<h3>ElasticSearch discovery failure</h3>
-
-<a
-href="http://elasticsearch-users.115913.n3.nabble.com/EC2-discovery-leads-to-two-masters-td3239318.html">Another
-EC2 split-brain</a>: a two-node cluster on "roughly 1 out of 10 startups"
-failed to converge when discovery messages took longer than three seconds to
-complete. As a result, both nodes would start as masters with the same cluster
-name. Since ElasticSearch doesn't demote primaries automatically, split-brain
-persisted until administrators intervened. Upping the discovery timeout to 15
-seconds resolved the issue.
-
-
-
-
-<h3>DRBD split-brain</h3>
+### DRBD split-brain
 
 When a two-node cluster partitions, there are no cases in which a node can
 reliably declare itself to be the primary. When this happens to <a
@@ -446,10 +335,7 @@ to divergent filesystem-level changes. The only real option for resolving these
 kinds of conflicts is to discard all writes not made to a selected component of
 the cluster.
 
-
-
-
-<h3>Github</h3>
+### Github
 
 On <a href="https://github.com/blog/1364-downtime-last-saturday">December 22nd,
 2012</a>, a planned software update on an aggregation switch caused some mild
@@ -482,31 +368,30 @@ downed fileserver pairs took five hours, during which Github was significantly
 degraded.
 
 
+## Managed hosting providers
 
-## WAN failures
+### Freistil IT
 
+Freistil IT hosts their servers with a colocation/managed-hosting provider.
+Their monitoring system <a
+href="http://www.freistil.it/2013/02/post-mortem-network-issues-last-week/">alerted
+Freistil</a> to 50--100% packet loss, localized to a particular datacenter. The
+network failure, caused by a router firmware bug, returned the next day.
+Elevated packet loss caused the GlusterFS distributed filesystem to enter
+split-brain undetected:
 
-<h3>PagerDuty</h3>
+> Unfortunately, the malfunctioning network had caused additional problems
+> which we became aware of in the afternoon when a customer called our support
+> hotline because their website failed to deliver certain image files. We found
+> that this was caused by a split-brain situation on the storage cluster
+> “stor02″ where changes made on node “stor02b” weren’t reflected on “stor02a”
+> and the self-heal algorithm built into the Gluster filesystem was not able to
+> resolve this inconsistency between the two data sets."
 
-PagerDuty designed their system to remain available in the face of node,
-datacenter, or even *provider* failure; their services are replicated between
-two EC2 availability zones *in separate regions* and another in Linode. On
-April 13, 2013, <a
-href="http://blog.pagerduty.com/2013/04/outage-post-mortem-april-13-2013/">an
-AWS peering point in northern California degraded</a>, causing connectivity
-issues for one of PagerDuty's nodes. As latencies between AWS availability
-zones rose, the notification dispatch system lost quorum and stopped
-dispatching messages entirely.
+Repairing that inconsistency led to a "brief overload of the web nodes because
+of a short surge in network traffic".
 
-Even though PagerDuty's infrastructure was designed with partition tolerance in
-mind, including the loss of an entire datacenter, correlated failures in two
-Amazon AZs caused 18 minutes of unavailability, dropping inbound API requests
-and delaying queued pages until quorum was re-established.
-
-
-
-
-<h3>An anonymous hosting provider</h3>
+### An anonymous hosting provider
 
 One company running 100-200 nodes on a major hosting provider reports that in a
 90-day period their provider's network experienced five distinct partitions.
@@ -518,116 +403,99 @@ networks, there were no major inconsistencies.
 
 
 
+## Cloud environments
+
+### Pacemaker/Heartbeat split-brain
+
+This <a
+href="http://readlist.com/lists/lists.linux-ha.org/linux-ha/6/31964.html">post
+to Linux-HA details a long-running partition between two heartbeat pairs</a>,
+in which two Linode VMs have each declared the other dead and claimed the
+shared IP for themselves. Successive posts suggest further network problems:
+emails failed to dispatch due to DNS resolution failure, and nodes reported
+"network unreachable". In this case the impact appears to have been minimal, in
+part because the split-brained application was a mostly-stateless proxy.
+
+### RelateIQ
+
+In a comment on <a href="http://aphyr.com/posts/284-call-me-maybe-mongodb">Call
+me maybe: MongoDB</a>, Scott Bessler observed exactly the same failure mode I
+demonstrated in the Jepsen post:
+
+> "Prescient. The w=safe scenario you show (including extra fails during
+> rollback/re-election) happened to us today when EC2 West region had network
+> issues that caused a network partition that separated PRIMARY from its 2
+> SECONDARIES in a 3 node replset. 2 hours later the old primary rejoined and
+> rolled back everything on the new primary. Our bad for not using w=majority."
+
+This partition caused <b>two hours of write loss</b>. From my conversations
+with large-scale MongoDB users, I gather that network events causing failover
+on EC2 are common. While most folks report that running their own hardware is
+more reliable, I know at least one company which sees their MongoDB cluster
+fail over on a weekly basis.
 
 
-<h3>CENIC Study</h3>
+### Mnesia on EC2
 
-Researchers at the University of California, San Diego <a
-href="http://cseweb.ucsd.edu/~snoeren/papers/cenic-sigcomm10.pdf">quantitatively
-analyzed</a> five years of operation CENIC wide-area network, which
-contains over two hundred routers across California. By
-cross-correlating link failures and additional external BGP and
-traceroute data, they discovered over 508 "isolating network
-partitions" that caused connectivity problems between hosts. Average
-partition duration ranged from 6 minutes for software-related failures
-to over 8.2 hours for hardware-related failures (median 2.7 and 32
-minutes; 95th percentile of 19.9 minutes and 3.7 days).
-
+EC2 outages can leave two nodes connected to the internet, but unable to see
+each other. This type of partition is especially dangerous, as writes to both
+sides of a partitioned cluster can cause inconsistency and lost data. That's
+exactly what happened to <a
+href="http://dukesoferl.blogspot.com/2008/03/network-partition-oops.html?m=1">this
+Mnesia cluster</a>, which diverged overnight. Their state wasn't critical, so
+the operations team just nuked one side of the cluster. They conclude: "the
+experience has convinced us that we need to prioritize up our network partition
+recovery strategy".
 
 
+### EC2 instability causing MongoDB and ElasticSearch unavailability
 
-<h3>Yahoo! PNUTS/Sherpa</h3>
+Network disruptions in EC2 are well-known, but unevenly distributed. For
+instance, <a
+href="https://forums.aws.amazon.com/thread.jspa?messageID=454155">this report
+of a total partition between the frontend and backend stacks</a> states that
+the web servers lose their connections to all backend instances for a few
+seconds, several times a month. Even though the disruptions were short, cluster
+convergence resulted in 30-45 minute outages and a corrupted index for
+ElasticSearch. As problems escalated, the outages occurred "2 to 4 times a
+day".
+
+
+### VoltDB split-brain on EC2
+
+One VoltDB user reports <a
+href="https://forum.voltdb.com/showthread.php?552-Nodes-stop-talking-to-each-other-and-form-independent-clusters">regular
+network failures causing nodes to causally diverge</a>, but also reported that
+their network logs included no dropped packets. Because this cluster had not
+enabled split-brain detection, both nodes ran as causally isolated primaries,
+causing significant data loss. 
+
+
+### ElasticSearch discovery failure
+
 <a
-href="http://www.mpi-sws.org/~druschel/courses/ds/papers/cooper-pnuts.pdf">Yahoo!
-PNUTS/Sherpa</a> was designed as a distributed database operating out of
-multiple, geographically distinct sites. Originally, PNUTS supported a strongly
-consistent "timeline consistency" operation, with one master per data item.
-However, the developers <a
-href="http://developer.yahoo.com/blogs/ydn/sherpa-7992.html#4">noted that</a>,
-in the event of "network partitioning or server failures," this design decision
-was too restrictive for many applications:
-
-> The first deployment of Sherpa supported the timeline-consistency model —
-> namely, all replicas of a record apply all updates in the same order — and
-> has API-level features to enable applications to cope with asynchronous
-> replication. Strict adherence leads to difficult situations under network
-> partitioning or server failures. These can be partially addressed with
-> override procedures and local data replication, but in many circumstances,
-> applications need a relaxed approach."
+href="http://elasticsearch-users.115913.n3.nabble.com/EC2-discovery-leads-to-two-masters-td3239318.html">Another
+EC2 split-brain</a>: a two-node cluster on "roughly 1 out of 10 startups"
+failed to converge when discovery messages took longer than three seconds to
+complete. As a result, both nodes would start as masters with the same cluster
+name. Since ElasticSearch doesn't demote primaries automatically, split-brain
+persisted until administrators intervened. Upping the discovery timeout to 15
+seconds resolved the issue.
 
 
+### RabbitMQ and ElasticSearch on Windows Azure
 
+There are a few <a
+href="http://social.msdn.microsoft.com/Forums/en-US/WAVirtualMachinesforWindows/thread/b261e1aa-5ec4-42fc-80ef-5b50a0a00618">scattered
+reports of Windows Azure partitions, such as <a
+href="http://rabbitmq.1065348.n5.nabble.com/Instable-HA-cluster-td24690.html">this
+account</a> of a RabbitMQ cluster which entered split-brain on a weekly basis.
+We also have reports of <a
+href="https://groups.google.com/forum/?fromgroups#!topic/elasticsearch/muZtKij3nUw">ElasticSearch
+split-brain</a>, but reports about Azure's network reliability are harder to
+come by than EC2 at this time.
 
-## Global routing failure
-
-
-<h3>Cloudflare</h3>
-
-CloudFlare runs 23 globally distributed datacenters with redundant network
-paths and anycast failover. <a
-href="http://blog.cloudflare.com/todays-outage-post-mortem-82515">In response
-to a DDoS attack against one of their customers</a>, their operations team
-deployed a new firewall rule to drop packets of a specific size. Juniper's
-FlowSpec protocol propagated that rule to all CloudFlare edge routers, where:
-
-> What should have happened is that no packet should have matched that rule
-> because no packet was actually that large. What happened instead is that the
-> routers encountered the rule and then proceeded to consume all their RAM
-> until they crashed.
-
-Recovering from the failure was more complicated by routers which failed to
-reboot automatically, and inaccessible management ports.
-
-> Even though some data centers came back online initially, they fell back over
-> again because all the traffic across our entire network hit them and
-> overloaded their resources.
-
-CloudFlare monitors their network carefully; the ops team had immediate
-visibility of the failure. However, coordinating globally distributed systems
-takes is complex, and calling on-site engineers to find and reboot routers by
-hand takes time. Recovery began in 30 minutes and was complete after an hour of
-unavailability.
-
-
-
-
-<h3>Global BGP Outages</h3>
-
-There have been several global Internet outages related to BGP
-misconfiguration. Notably, in 2008, Pakistan Telecom, responding to a
-government edict to block YouTube.com, incorrectly advertised its (blocked)
-route to other provides, which hijacked traffic from the site and <a
-href="http://news.cnet.com/8301-10784_3-9878655-7.html">briefly rendered it
-unreachable</a>. In 2010, a group of Duke University researchers achieved
-similar effect by <a
-href="http://www.merit.edu/mail.archives/nanog/msg11505.html">testing</a> an
-experimental flag in the BGP protocol. Similar incidents have occured <a
-href="http://www.renesys.com/2006/01/coned-steals-the-net/">in 2006</a>
-(knocking sites like Martha Stewart Living and The New York Times offline), <a
-href="http://www.renesys.com/2005/12/internetwide-nearcatastrophela/">in
-2005</a> (where a misconfiguration in Turkey attempted in a redirect for the
-*entire* internet), and <a
-href="http://merit.edu/mail.archives/nanog/1997-04/msg00380.html">in 1997</a>.
-
-
-
-## Misconfiguration and Bugs
-
-
-<h3>Juniper Routing Bug</h3>
-
-The software running inside network hardware (i.e., firmware) is subject to
-bugs just like the rest of computer software. A bug in a router upgrade in
-Juniper Networks's routers <a
-href="http://www.eweek.com/c/a/IT-Infrastructure/Bug-in-Juniper-Router-Firmware-Update-Causes-Massive-Internet-Outage-709180/">caused
-outages</a> in Level 3 Communications's networking backbone. This subsequently
-knocked services like Time Warner Cable and RIM BlackBerry, and several UK
-internet service providers offline.
-
-
-
-
-<h3>AWS EBS outage</h3>
+### AWS EBS outage
 
 On April 21st, 2011, <a href="http://aws.amazon.com/message/65648/">Amazon's
 Web Services</a> went down for over 12 hours, causing outages for hundreds of
@@ -667,10 +535,110 @@ The multi-AZ correlated failure caused widespread outages for clients relying
 on AWS. <a href="https://status.heroku.com/incidents/151">Heroku reported</a>
 between 16 and 60 hours of unavailability for their users' databases.
 
-## CPU and GC pauses
 
 
-<h3>Bonsai.io</h3>
+
+
+## WAN failures
+
+### PagerDuty
+
+PagerDuty designed their system to remain available in the face of node,
+datacenter, or even *provider* failure; their services are replicated between
+two EC2 availability zones *in separate regions* and another in Linode. On
+April 13, 2013, <a
+href="http://blog.pagerduty.com/2013/04/outage-post-mortem-april-13-2013/">an
+AWS peering point in northern California degraded</a>, causing connectivity
+issues for one of PagerDuty's nodes. As latencies between AWS availability
+zones rose, the notification dispatch system lost quorum and stopped
+dispatching messages entirely.
+
+Even though PagerDuty's infrastructure was designed with partition tolerance in
+mind, including the loss of an entire datacenter, correlated failures in two
+Amazon AZs caused 18 minutes of unavailability, dropping inbound API requests
+and delaying queued pages until quorum was re-established.
+
+
+### CENIC Study
+
+Researchers at the University of California, San Diego <a
+href="http://cseweb.ucsd.edu/~snoeren/papers/cenic-sigcomm10.pdf">quantitatively
+analyzed</a> five years of operation CENIC wide-area network, which
+contains over two hundred routers across California. By
+cross-correlating link failures and additional external BGP and
+traceroute data, they discovered over 508 "isolating network
+partitions" that caused connectivity problems between hosts. Average
+partition duration ranged from 6 minutes for software-related failures
+to over 8.2 hours for hardware-related failures (median 2.7 and 32
+minutes; 95th percentile of 19.9 minutes and 3.7 days).
+
+
+
+## Global routing failure
+
+### Cloudflare
+
+CloudFlare runs 23 globally distributed datacenters with redundant network
+paths and anycast failover. <a
+href="http://blog.cloudflare.com/todays-outage-post-mortem-82515">In response
+to a DDoS attack against one of their customers</a>, their operations team
+deployed a new firewall rule to drop packets of a specific size. Juniper's
+FlowSpec protocol propagated that rule to all CloudFlare edge routers, where:
+
+> What should have happened is that no packet should have matched that rule
+> because no packet was actually that large. What happened instead is that the
+> routers encountered the rule and then proceeded to consume all their RAM
+> until they crashed.
+
+Recovering from the failure was more complicated by routers which failed to
+reboot automatically, and inaccessible management ports.
+
+> Even though some data centers came back online initially, they fell back over
+> again because all the traffic across our entire network hit them and
+> overloaded their resources.
+
+CloudFlare monitors their network carefully; the ops team had immediate
+visibility of the failure. However, coordinating globally distributed systems
+takes is complex, and calling on-site engineers to find and reboot routers by
+hand takes time. Recovery began in 30 minutes and was complete after an hour of
+unavailability.
+
+
+
+### Global BGP Outages
+
+There have been several global Internet outages related to BGP
+misconfiguration. Notably, in 2008, Pakistan Telecom, responding to a
+government edict to block YouTube.com, incorrectly advertised its (blocked)
+route to other provides, which hijacked traffic from the site and <a
+href="http://news.cnet.com/8301-10784_3-9878655-7.html">briefly rendered it
+unreachable</a>. In 2010, a group of Duke University researchers achieved
+similar effect by <a
+href="http://www.merit.edu/mail.archives/nanog/msg11505.html">testing</a> an
+experimental flag in the BGP protocol. Similar incidents have occured <a
+href="http://www.renesys.com/2006/01/coned-steals-the-net/">in 2006</a>
+(knocking sites like Martha Stewart Living and The New York Times offline), <a
+href="http://www.renesys.com/2005/12/internetwide-nearcatastrophela/">in
+2005</a> (where a misconfiguration in Turkey attempted in a redirect for the
+*entire* internet), and <a
+href="http://merit.edu/mail.archives/nanog/1997-04/msg00380.html">in 1997</a>.
+
+
+### Juniper Routing Bug
+
+The software running inside network hardware (i.e., firmware) is subject to
+bugs just like the rest of computer software. A bug in a router upgrade in
+Juniper Networks's routers <a
+href="http://www.eweek.com/c/a/IT-Infrastructure/Bug-in-Juniper-Router-Firmware-Update-Causes-Massive-Internet-Outage-709180/">caused
+outages</a> in Level 3 Communications's networking backbone. This subsequently
+knocked services like Time Warner Cable and RIM BlackBerry, and several UK
+internet service providers offline.
+
+
+## GC, Disk IO, and CPU load
+
+
+### Bonsai.io
 
 Not all partitions involve the network hardware directly; some are caused by
 the software's inability to process messages. Bonsai.io <a
@@ -681,9 +649,7 @@ components. The failure led to <b>20 minutes of hard downtime, and six hours of
 degraded service.</b>
 
 
-
-
-<h3>Searchbox.io</h3>
+### Searchbox.io
 
 Stop-the-world garbage collection can force application latencies on the order
 of seconds to minutes. As Searchbox.io <a
@@ -695,9 +661,7 @@ distributed systems is difficult, and benign omissions can lead to serious
 consequences.
 
 
-
-
-<h3>Github</h3>
+### Github
 
 Github relies heavily on Pacemaker and Heartbeat; programs which coordinate
 cluster resources between nodes. They use Percona Replication Manager, a
@@ -752,16 +716,15 @@ they note in the postmortem:
 Distributed systems are *hard*.
 
 
+## Mysteries
 
-
-<h3>Mystery RabbitMQ partitions</h3>
+### Mystery RabbitMQ partitions
 
 Sometimes, nobody knows why the system partitioned. This <a
 href="http://serverfault.com/questions/497308/rabbitmq-network-partition-error">RabbitMQ
 failure</a> seems like one of those cases: few retransmits, no large gaps
 between messages, and no clear loss of connectivity between nodes. Upping the
 partition detection timeout to 2 minutes reduced the frequency of partitions,
-but didn't prevent them altogether
-. 
+but didn't prevent them altogether. 
 
 
