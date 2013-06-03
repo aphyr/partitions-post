@@ -21,60 +21,48 @@ $(document).ready(function() {
 
 </script>
 
-*I've been discussing <a href="/tags/jepsen">Jepsen</a> and partition tolerance with the inimitable <a href="http://www.bailis.org/">Peter Bailis</a>, and he was kind enough to join me in writing this post. You may be interested in his upcoming work on <a href="http://arxiv.org/pdf/1302.0309.pdf">Highly Available Transactions</a>.*
+*I've been discussing <a href="/tags/jepsen">Jepsen</a> and partition
+ tolerance with the <a href="http://www.bailis.org/">Peter Bailis</a>,
+ who I invited to join me in writing this post. You may be interested
+ in his upcoming work on <a
+ href="http://www.bailis.org/blog/hat-not-cap-introducing-highly-available-transactions/">Highly
+ Available Transactions</a>.*
 
-Partitions are a contentious matter. Some people claim that modern IP networks
-are reliable, and that we are <a href="http://antirez.com/news/57">too
-concerned</a> with designing for *theoretical* failure modes. Single-node
-failures are common, they accept, but we can <a
+
+Partitions are a contentious matter. Some claim that modern IP
+networks are reliable and that we are too concerned with designing for
+*theoretical* failure modes. They often accept that single-node
+failures are common, but we can <a
 href="http://blog.voltdb.com/clarifications-cap-theorem-and-data-related-errors/">reliably
-detect and handle those failures</a>, which radically simplifies the design of
-databases, queues, and applications.
-
-Conversely, some <a
-href="http://www.rgoarchitects.com/files/fallacies.pdf">subscribe</a> to Peter
-Deutsch' famous <a
-href="https://blogs.oracle.com/jag/resource/Fallacies.html">Fallacies of
-Distriuted Computing</a> and will disagree. They'll attest that partitions do
-occur in their systems, and that, as James Hamilton of Amazon Web Services
-[neatly
+detect and handle those failures</a>. Conversely,
+others <a
+href="http://www.rgoarchitects.com/files/fallacies.pdf">subscribe</a>
+to Peter Deutsch's <a
+href="https://blogs.oracle.com/jag/resource/Fallacies.html">Fallacies
+of Distriuted Computing</a> and disagree. They'll attest that
+partitions do occur in their systems, and that, as James Hamilton of
+Amazon Web Services [neatly
 summarizes](http://perspectives.mvdirona.com/2010/04/07/StonebrakerOnCAPTheoremAndDatabases.aspx),
-"network partitions should be rare but net gear continues to cause more issues
-than it should." Given the <a
-href="http://henryr.github.io/cap-faq/">consequences of partitions for
-distributed systems design</a>, this is an important question--but what is the *truth* of the matter?
+"network partitions should be rare but net gear continues to cause
+more issues than it should." Given the <a
+href="http://henryr.github.io/cap-faq/">consequences of partition
+behavior for distributed systems design</a>, the answer to this question radically affects the design of distributed databases, queues, and applications. So who's right?
 
-A key challenge in this debate is the lack of evidence. Because not everyone
-agrees on what things to measure, we have few normalized bases for comparing
-the reliability of networks or applications. We can track link availability,
-and estimate packet loss, but understanding the effect on *applications* is a
-more subtle problem.
-
-What evidence we do have depends closely on particular vendors, topologies, and
-application designs--and is difficult to generalize. Even when an organization
-*does* have a clear picture of their network's behavior, they rarely share
-specifics. Those that do, we sincerely thank for advancing our shared
-understanding of distributed system design.
+A key challenge in this debate is the lack of evidence. We have few normalized bases for comparing network and application reliability and even less data for each metric. We can track link availability and estimate packet loss, but understanding the end-to-end effect on *applications* is more difficult. The evidence we do have is difficult to generalize: it is often deployment-specific and closely tied to particular vendors, topologies, and application designs. Worse, even when an organization has clear picture of their network's behavior, they rarely share specifics.
 
 Finally, distributed systems are designed to resist failure, which means
 *noticable* outages often depend on a complex interaction of failure modes.
-Redundancy, load, timing, and application semantics all play a role. Many applications silently degrade when the network fails, and the problem may not be noticed or understood for some time.
+Redundancy, load, timing, and application semantics all play a role. Many applications silently degrade when the network fails, and resulting problems may not be understood for some time, when they are noticed at all.
 
 As a result, much of what we know about the failure modes in real-wold
 distributed systems is founded on guesswork and rumor. Sysadmins and developers
-will swap failure modes to each other over a few beers, but detailed
-postmortems or comprehensive surveys of availability are few and far between.
-In this post, as an effort towards a more open and honest discussion of
-real-world partition behavior, we'd like to bring these stories together.
+will discuss failure modes over beers, but detailed postmortems and comprehensive surveys of availability are few and far between. In this post, we'd like to bring a few of these stories together. We believe this is a first step towards a more open and honest discussion of real-world partition behavior, and, ultimately, more robust distributed systems design.
 
+## Hints from big deployments
 
-## Hints from big companies
-
-To start off, we'd like to explore the evidence we have from the big players in
+To start off, let's consider evidence from big players in
 distributed systems: companies running globally distributed infrastructure with
-hundreds of thousands of nodes. Because of their scale, these reports tell us
-the most about the *mean* probability of failure--and their publications often
-hint at the importance of partitions in their experience.
+hundreds of thousands of nodes. Of all of the data we have collected, these reports best summarize operation in the large, distilling the experience of operating what are likely the largest distributed systems ever deployed. Their publications, which (unlike many of the case studies we will examine later) often capture aggregate system behavior and large-scale statistical trends, indicate (often obliquely) that partitions are a reality in their deployments.
 
 ### The Microsoft datacenter Study
 
@@ -125,11 +113,10 @@ suggests that a typical first year for a new Google cluster involves:
 - 3 router failures (have to immediately pull traffic for an hour)
 
 While Google doesn't tell us much about the application-level consequences of
-their network partitions, Lessons From Distributed Systems suggests it is a
-significant concern, citing the challenge of "[e]asy-to-use abstractions for
+their network partitions, "Lessons From Distributed Systems" suggests it they are a significant concern, citing the challenge of "[e]asy-to-use abstractions for
 resolving conflicting updates to multiple versions of a piece of state" as
 being useful for "reconciling replicated state in different data centers after
-repairing a network partition".
+repairing a network partition."
 
 
 ### Amazon Dynamo
@@ -165,18 +152,17 @@ was too restrictive for many applications:
 
 ## GC, Disk IO, and CPU load
 
-Not all partitions originate in the physical network. Some dropped or delayed
+Not all partitions originate in the physical network. Sometimes dropped or delayed
 messages are a consequence of crashes, race conditions, OS scheduler latency,
-or overloaded processes. The important thing is that the system delayed or
-dropped messages--which can happen at any level of the stack.
+or overloaded processes. The following studies highlight the fact that partitions--wherein the system delays or drops messages--can occur at any layer of the software stack.
 
 ### High CPU use
 
 Bonsai.io <a
 href="http://www.bonsai.io/blog/2013/03/05/outage-post-mortem">discovered</a>
 high CPU use and load averages on an ElasticSearch node. They restarted the
-cluster, but it failed to converge, partitioning itself into two independent
-components. The failure led to 20 minutes of hard downtime, and six hours of
+cluster, but upon restart, the cluster partitioned itself into two independent
+components. The failure led to 20 minutes of unavailability, and six hours of
 degraded service.
 
 
@@ -253,24 +239,24 @@ Distributed systems are *hard*.
 Unreliable NIC hardware or drivers are implicated in a broad array of
 partitions. <a href="http://www.spinics.net/lists/netdev/msg210485.html">Marc
 Donges and Michael Chan</a> bring us a thrilling report of the popular BCM5709
-chipset abruptly dropping inbound, *but not outbound* packets to a machine.
-Because inbound packets were dropped, the node was unable to service requests.
-Because it could still send heartbeats to its hot spare via keepalived, the
-spare considered it alive and refused to take over. The service was unavailable
-for five hours, and did not recover without a reboot.
+chipset abruptly dropping inbound *but not outbound* packets to a machine.
+Because the NIC dropped inbound packets, the node was unable to service requests.
+However, because it could still *send* heartbeats to its hot spare via keepalived, the
+spare considered the primary alive and refused to take over. The service was unavailable
+for five hours and did not recover without a reboot.
 
 Sven Ulland <a
 href="http://www.spinics.net/lists/netdev/msg210491.html">followed up</a>,
 reporting the same symptoms with the BCM5709S chipset on Linux
 2.6.32-41squeeze2. Despite pulling commits from mainline which supposedly fixed
 a similar set of issues with the bnx2 driver, they were unable to resolve the
-issue until 2.6.38.
+issue until version 2.6.38.
 
 Since Dell shipped a large number of servers with the Broadcom BCM5709, the
-impact of these firmware bugs was widely felt. For instance, the 5709 had a bug
+impact of these firmware bugs was widely observed. For instance, the 5709 had a bug
 in its <a
 href="http://monolight.cc/2011/08/flow-control-flaw-in-broadcom-bcm5709-nics-and-bcm56xxx-switches/">802.3x
-flow control code</a> which caused them to spew out PAUSE frames when the
+flow control code</a> causing them to spew PAUSE frames when the
 chipset crashed or its buffer filled out. This problem was magnified by the
 BCM56314 and BCM56820 switch-on-a-chip devices (a component in a number of
 Dell's top-of-rack switches), which, by default, spewed PAUSE frames at *every*
@@ -283,7 +269,7 @@ href="http://elasticsearch-users.115913.n3.nabble.com/Cluster-Split-Brain-td3333
 split brain report</a>. Meanwhile, the the Broadcom 57711 was notorious for
 causing <a
 href="http://communities.vmware.com/thread/284628?start=0&tstart=0">extremely
-high latencies under load with jumbo frames</a>; a particularly thorny issue
+high latencies under load with jumbo frames</a>, a particularly thorny issue
 for ESX users with iSCSI-backed storage.
 
 
@@ -296,7 +282,7 @@ by a third. Suspecting link aggregation, CityCloud disabled the feature on
 their switches and allowed self-heal operations to proceed.
 
 Roughly 12 hours later, the network failures returned on one node. CityCloud
-identified a particular driver issue and updated the downed node, returning
+identified the cause as driver issue and updated the downed node, returning
 service. However, the outage resulted in data inconsistency between GlusterFS
 pairs:
 
@@ -320,8 +306,8 @@ As Microsoft's SIGCOMM paper suggests, redundancy doesn't always prevent link
 failure. <a href="http://status.fogcreek.com/2011/06/postmortem.html">When a
 power distribution unit failed</a> and took down one of two redundant
 top-of-rack switches, Fog Creek lost service for a subset of customers on that
-rack, but remained consistent and available for most users. However, the
-other switch in that rack *also* lost power, for undetermined reasons.
+rack but remained consistent and available for most users. However, the
+other switch in that rack *also* lost power for undetermined reasons.
 That failure isolated the two neighboring racks from one another, taking
 down all On Demand services.
 
@@ -340,8 +326,7 @@ down all On Demand services.
 > flood, indicating a spanning-tree flap. This is most likely what was changing
 > the loop domain.
 
-According to the BPDU standard, the flood *shouldn't have happened*. Unexpected
-behavior outside the rules of the system caused two hours of total service
+According to the BPDU standard, the flood *shouldn't have happened*. But it did, and this unexpected behavior that deviated from the system assumptions resulted in two hours of total service
 unavailability.
 
 
@@ -355,11 +340,7 @@ network, the installation process resulted in bridge loops, and switches
 disabled links to prevent failure. This problem was quickly resolved, but later
 investigation revealed that many interfaces were still pegged at 100% capacity.
 
-While investigating that problem, a switch misconfiguration resulted in an
-automated fault detector destroying *all* links when an individual link was
-disabled, which caused 18 minutes of hard downtime. The problem was later
-traced to a firmware bug preventing switches from updating their MAC address
-caches correctly, forcing them to broadcast most packets to every interface. 
+While investigating that problem, a misconfigured switch triggered aberrant automatic fault detection behavior: when one link was disabled, the fault detector disabled *all* links. This caused 18 minutes of hard downtime. The problem was later traced to a firmware bug preventing switches from updating their MAC address caches correctly, which forced them to broadcast most packets to every interface. 
 
 
 ### Mystery RabbitMQ partitions
@@ -368,16 +349,15 @@ Sometimes, nobody knows why the system partitioned. This <a
 href="http://serverfault.com/questions/497308/rabbitmq-network-partition-error">RabbitMQ
 failure</a> seems like one of those cases: few retransmits, no large gaps
 between messages, and no clear loss of connectivity between nodes. Upping the
-partition detection timeout to 2 minutes reduced the frequency of partitions,
+partition detection timeout to 2 minutes reduced the frequency of partitions
 but didn't prevent them altogether. 
 
 
 ### DRBD split-brain
 
 When a two-node cluster partitions, there are no cases in which a node can
-reliably declare itself to be the primary. When this happens to <a
-href="http://serverfault.com/questions/485545/dual-primary-ocfs2-drbd-encountered-split-brain-is-recovery-always-going-to-be">a
-DRBD filesystem</a>, both nodes can remain online and accepting writes, leading
+reliably declare itself to be the primary. When this happens to a DRBD filesystem, <a
+href="http://serverfault.com/questions/485545/dual-primary-ocfs2-drbd-encountered-split-brain-is-recovery-always-going-to-be">as one user reported</a>, both nodes can remain online and accept writes, leading
 to divergent filesystem-level changes. The only realistic option for resolving
 these kinds of conflicts is to discard all writes not made to a selected
 component of the cluster.
@@ -423,24 +403,19 @@ same time. With both nodes dead, files belonging to that pair were unavailable.
 To prevent filesystem corruption, DRBD requires that administrators ensure the
 original primary node is still the primary node before resuming replication.
 For pairs where both nodes were primary, the ops team had to examine log files
-or bring the node online in isolation to determine its state. Recovering those
-downed fileserver pairs took five hours, during which Github was significantly
-degraded.
+and/or bring the node online in isolation to determine its state. Recovering those downed fileserver pairs took five hours, during which Github service was significantly degraded.
 
 
 ## Managed hosting providers
 
-Running your own datacenter can be cheaper and more reliable, but it also means
-you have to be a network and server administrator. What about managed hosting
-providers, which rent dedicated or virtualized hardware to users, and take care
-of the network and hardware setup for you?
+Running your own datacenter can be cheaper and more reliable than using public cloud infrastructure, but it also means you have to be a network and server administrator. What about managed hosting providers, which rent dedicated or virtualized hardware to users and often take care of the network and hardware setup for you?
 
 ### An undetected GlusterFS split-brain
 
 Freistil IT hosts their servers with a colocation/managed-hosting provider.
 Their monitoring system <a
 href="http://www.freistil.it/2013/02/post-mortem-network-issues-last-week/">alerted
-Freistil</a> to 50--100% packet loss, localized to a particular datacenter. The
+Freistil</a> to 50--100% packet loss localized to a specific datacenter. The
 network failure, caused by a router firmware bug, returned the next day.
 Elevated packet loss caused the GlusterFS distributed filesystem to enter
 split-brain undetected:
@@ -454,30 +429,25 @@ split-brain undetected:
 > resolve this inconsistency between the two data sets.
 
 Repairing that inconsistency led to a "brief overload of the web nodes because
-of a short surge in network traffic".
+of a short surge in network traffic."
 
 
 ### An anonymous hosting provider
 
-From what I can gather informally, *all* the major managed hosting providers
+From what we can gather informally, *all* the major managed hosting providers
 experience regular network failures. One company running 100-200 nodes on a
 major hosting provider reported that in a 90-day period the provider's network
-went through five distinct periods of partitions. Some cut off connectivity
-between the provider's cloud network and the public internet, and others
-separated the cloud network from the provider's internal managed-hosting
-network. The failures caused unavailability, but because this company wasn't
-running any significant distributed systems between those networks, there were
-no major inconsistencies.
+went through five distinct periods of partitions. Some partitions disabled connectivity between the provider's cloud network and the public internet, and others separated the cloud network from the provider's internal managed-hosting network. The failures caused unavailability but, because this company wasn't running any significant distributed systems *across* those partitioned networks, there were no major inconsistencies.
 
 
 ### Pacemaker/Heartbeat split-brain
 
-One post to Linux-HA <a
+A post to Linux-HA <a
 href="http://readlist.com/lists/lists.linux-ha.org/linux-ha/6/31964.html">details a long-running partition between a Heartbeat pair</a>,
 in which two Linode VMs have each declared the other dead and claimed a
 shared IP for themselves. Successive posts suggest further network problems:
 emails failed to dispatch due to DNS resolution failure, and nodes reported
-"network unreachable". In this case the impact appears to have been minimal, in
+"network unreachable." In this case, the impact appears to have been minimal--in
 part because the partitioned application was just a proxy.
 
 
@@ -485,8 +455,7 @@ part because the partitioned application was just a proxy.
 ## Cloud providers
 
 Large-scale virtualized environments are notorious for transient latency,
-dropped packets, and full-on partitions, often affecting a particular kernel or
-availability zone. Sometimes the failures occur between specific subsections of the provider's datacenter, revealing internal planes of cleavage.
+dropped packets, and full-blown network partitions, often affecting a particular software version or availability zone. Sometimes the failures occur between specific subsections of the provider's datacenter, revealing internal planes of cleavage.
 
 ### An isolated MongoDB primary on EC2
 
@@ -507,13 +476,13 @@ are not unknown.
 
 ### Mnesia split-brain on EC2
 
-EC2 outages can leave two nodes connected to the internet, but unable to see
+EC2 outages can leave two nodes connected to the internet but unable to see
 each other. This type of partition is especially dangerous, as writes to both
 sides of a partitioned cluster can cause inconsistency and lost data. That's
 exactly what happened to <a
 href="http://dukesoferl.blogspot.com/2008/03/network-partition-oops.html?m=1">this
 Mnesia cluster</a>, which diverged overnight. Their state wasn't critical, so
-the operations team just nuked one side of the cluster. They conclude: "the
+the operations team simply nuked one side of the cluster. They conclude: "the
 experience has convinced us that we need to prioritize up our network partition
 recovery strategy".
 
@@ -528,16 +497,16 @@ their the web servers lose their connections to all backend instances for a few
 seconds, several times a month. Even though the disruptions were short, cluster
 convergence resulted in 30-45 minute outages and a corrupted index for
 ElasticSearch. As problems escalated, the outages occurred "2 to 4 times a
-day".
+day."
 
 
 ### VoltDB split-brain on EC2
 
 One VoltDB user reports <a
 href="https://forum.voltdb.com/showthread.php?552-Nodes-stop-talking-to-each-other-and-form-independent-clusters">regular
-network failures causing nodes to causally diverge</a>, but also reported that
+network failures causing replica divergence</a> but also reported that
 their network logs included no dropped packets. Because this cluster had not
-enabled split-brain detection, both nodes ran as causally isolated primaries,
+enabled split-brain detection, both nodes ran as isolated primaries,
 causing significant data loss. 
 
 
@@ -560,9 +529,9 @@ href="http://social.msdn.microsoft.com/Forums/en-US/WAVirtualMachinesforWindows/
 reports of Windows Azure partitions, such as <a
 href="http://rabbitmq.1065348.n5.nabble.com/Instable-HA-cluster-td24690.html">this
 account</a> of a RabbitMQ cluster which entered split-brain on a weekly basis.
-There's also this account of <a
+There's also an account of <a
 href="https://groups.google.com/forum/?fromgroups#!topic/elasticsearch/muZtKij3nUw">ElasticSearch
-split-brain</a>, but since Azure is a relative newcomer compared to EC2, descriptions of its network reliability are scant.
+split-brain</a>, but since Azure is a relative newcomer compared to EC2, descriptions of its network reliability are limited.
 
 
 ### AWS EBS outage
@@ -571,7 +540,7 @@ On April 21st, 2011, <a href="http://aws.amazon.com/message/65648/">Amazon's
 Web Services</a> went down for over 12 hours, causing outages for hundreds of
 high-profile web sites to go offline. As a part of normal AWS scaling
 activities, Amazon engineers shifted traffic away from a router in the Elastic
-Block Store network in single US-East AZ.
+Block Store (EBS) network in a single US-East Availability Zone (AZ).
 
 > The traffic shift was executed incorrectly and rather than routing the
 > traffic to the other router on the primary network, the traffic was routed
@@ -587,8 +556,7 @@ Block Store network in single US-East AZ.
 
 The partition coupled with aggressive failure-recovery code caused a mirroring
 storm, which led to network congestion and triggered a previously unknown race
-condition in EBS. EC2 was unavailable for roughly 12 hours, but EBS was down or
-degraded for over 80 hours.
+condition in EBS. EC2 was unavailable for roughly 12 hours, and EBS was unavailable or degraded for over 80 hours.
 
 The EBS failure also caused an outage in Amazon's Relational Database Service.
 When one AZ fails, RDS is designed to fail over to a different AZ. However,
@@ -601,31 +569,25 @@ When one AZ fails, RDS is designed to fail over to a different AZ. However,
 > agent to automatically fail over to the secondary replica without risking
 > data loss, and manual intervention was required."
 
-The multi-AZ correlated failure caused widespread outages for clients relying
-on AWS. For example, <a href="https://status.heroku.com/incidents/151">Heroku
+This correlated failure caused widespread outages for clients relying
+on AWS). For example, <a href="https://status.heroku.com/incidents/151">Heroku
 reported</a> between 16 and 60 hours of unavailability for their users'
 databases.
 
 
 ## WAN failures
 
-Microsoft's SIGCOMM paper aligns with our anecdotal knowledge; WAN links
-between datacenters appear to fail less often, but more catastrophically, than
-the links within the datacenter itself. These failures are particularly
-interesting because HA systems often require distribution across multiple
-availability zones or datacenters--which comes with new challenges in
-latency and partition severity.
+While we have largely focused on failures over local area networks (or near-local networks), wide area network (WAN) failures are also common (if less frequently documented). These failures are particularly interesting because there are often fewer redundant WAN links and systems guaranteeing high availability (and catastrophic disaster recovery) require distribution across multiple availability zones or datacenters. Accordingly, graceful degradation of system behavior under partitions (not to mention increased latency) is especially important for many systems operating in the wide area.
 
 ### PagerDuty
 
 PagerDuty designed their system to remain available in the face of node,
 datacenter, or even *provider* failure; their services are replicated between
-two EC2 regions and a datacenter in Linode. On April 13, 2013, <a
+two EC2 regions and a datacenter hosted by Linode. On April 13, 2013, <a
 href="http://blog.pagerduty.com/2013/04/outage-post-mortem-april-13-2013/">an
 AWS peering point in northern California degraded</a>, causing connectivity
 issues for one of PagerDuty's EC2 nodes. As latencies between AWS availability
-zones rose, the notification dispatch system lost quorum and stopped
-dispatching messages entirely.
+zones rose, the notification dispatch system lost the ability to contact to a quorum of nodes and stopped dispatching messages entirely.
 
 Even though PagerDuty's infrastructure was designed with partition tolerance in
 mind, correlated failures in two Amazon AZs caused 18 minutes of
@@ -708,27 +670,13 @@ href="http://merit.edu/mail.archives/nanog/1997-04/msg00380.html">in 1997</a>.
 
 ## Where do we go from here?
 
-This post is meant as a reference argument; to illustrate that the problem is
-real, and deserves our consideration. Processes, nodes, NICs, switches,
-networks, and globally distributed networks do fail, and the economic
-consequences are real. Moreover, for each of these failure staories 
+This post is meant as a reference argument, to illustrate that, according to a wide array of practitioner accounts both on the Internet and in the academic literature, partitioning behavior occurs in many real-world deployments. Processes, servers, NICs, switches,
+networks, and globally distributed networks fail, and the economic
+consequences are real. Partitions deserve serious consideration. 
 
-Failures can occur in systems which are stable for months, or be triggered as a
-part of routine upgrades or emergency maintenance. The consequences of these
-outages can range from increased latency and temporary unavailability to
-inconsistency, corruption, and data loss. Split-brain is not an academic
-concern: it happens to all kinds of systems--sometimes for *days on end*. 
+Partitions can occur at any time. Network outages can suddenly arise in systems that are stable for months at a time, or, alternatively, during routine upgrades or emergency maintenance. The consequences of these outages can range from increased latency and temporary unavailability to inconsistency, corruption, and data loss. Split-brain is not an academic concern: it happens to all kinds of systems--sometimes for *days on end*. 
 
-On the other hand, some networks really *are* reliable. I've spoken with
-engineers at major financial firms, and they report that despite putting a
-great deal of effort into designing partition-tolerant systems, their networks
-rarely, if ever, partitioned. Cautious engineering and spending more money can
-prevent outages.
+In practice, some networks really *are* reliable. Engineers at major financial firms report that, despite putting serious effort into designing systems that gracefully tolerate partitions, their networks rarely, if ever, exhibit partitioning behavior. Moreover, cautious engineering and lots of money can prevent outages.
 
 However, not all organizations can afford the cost or operational complexity of
-highly reliable networks. From Google and Amazon to one-man startups;
-partitions arise in networks of all shapes and sizes--and often for
-unpredictable reasons. It's worth considering the risk *before* they
-occur--because it's much easier to design a partition-tolerant system on a
-whiteboard than to redesign and transition a complex system in your production
-environment.
+highly reliable networks. And, from Google and Amazon, who operate commodity and/or low-cost hardware due to sheer scale, to one-man startups built on shoestring budgets, failures are a reality. It's important to consider partitions *before* they occur--because it's much easier to make decisions about behavior under partition on a whiteboard than to redesign, re-engineer, and upgrade a complex system in production environment, especially when it's throwing 404 errors at your users. For some applications, giving 404 is okay, but know when it's not, and plan for partitions. Have an answer to the question: *when my servers can't talk, what happens to my application?* Based on what we've seen here, our network will likely test you on it.
