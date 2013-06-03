@@ -32,7 +32,7 @@ networks are reliable and that we are too concerned with designing for
 *theoretical* failure modes. They often accept that single-node failures are
 common, but argue that we can <a
 href="http://blog.voltdb.com/clarifications-cap-theorem-and-data-related-errors/">reliably
-detect and handle thems</a>. Conversely, others <a
+detect and handle them</a>. Conversely, others <a
 href="http://www.rgoarchitects.com/files/fallacies.pdf">subscribe</a> to Peter
 Deutsch's <a
 href="https://blogs.oracle.com/jag/resource/Fallacies.html">Fallacies of
