@@ -256,112 +256,6 @@ For pairs where both nodes were primary, the ops team had to examine log files
 and/or bring the node online in isolation to determine its state. Recovering those downed fileserver pairs took five hours, during which Github service was significantly degraded.
 
 
-## NICs and drivers
-
-### BCM5709 and friends
-
-Unreliable NIC hardware or drivers are implicated in a broad array of
-partitions. <a href="http://www.spinics.net/lists/netdev/msg210485.html">Marc
-Donges and Michael Chan</a> bring us a thrilling report of the popular BCM5709
-chipset abruptly dropping inbound *but not outbound* packets to a machine.
-Because the NIC dropped inbound packets, the node was unable to service requests.
-However, because it could still *send* heartbeats to its hot spare via keepalived, the
-spare considered the primary alive and refused to take over. The service was unavailable
-for five hours and did not recover without a reboot.
-
-Sven Ulland <a
-href="http://www.spinics.net/lists/netdev/msg210491.html">followed up</a>,
-reporting the same symptoms with the BCM5709S chipset on Linux
-2.6.32-41squeeze2. Despite pulling commits from mainline which supposedly fixed
-a similar set of issues with the bnx2 driver, they were unable to resolve the
-issue until version 2.6.38.
-
-Since Dell shipped a large number of servers with the Broadcom BCM5709, the
-impact of these firmware bugs was widely observed. For instance, the 5709 had a bug
-in its <a
-href="http://monolight.cc/2011/08/flow-control-flaw-in-broadcom-bcm5709-nics-and-bcm56xxx-switches/">802.3x
-flow control code</a> causing them to spew PAUSE frames when the
-chipset crashed or its buffer filled out. This problem was magnified by the
-BCM56314 and BCM56820 switch-on-a-chip devices (a component in a number of
-Dell's top-of-rack switches), which, by default, spewed PAUSE frames at *every*
-interface trying to communicate with the offending 5709 NIC. This led to
-cascading failures on entire switches or networks.
-
-The bnx2 driver could also cause transient or flapping network failures, as
-described in this <a
-href="http://elasticsearch-users.115913.n3.nabble.com/Cluster-Split-Brain-td3333510.html">ElasticSearch
-split brain report</a>. Meanwhile, the the Broadcom 57711 was notorious for
-causing <a
-href="http://communities.vmware.com/thread/284628?start=0&tstart=0">extremely
-high latencies under load with jumbo frames</a>, a particularly thorny issue
-for ESX users with iSCSI-backed storage.
-
-
-### A GlusterFS partition caused by a driver bug
-
-After a scheduled upgrade, <a
-href="https://www.citycloud.eu/cloud-computing/post-mortem/">CityCloud noticed
-unexpected network failures</a> in two distinct GlusterFS pairs</a>, followed
-by a third. Suspecting link aggregation, CityCloud disabled the feature on
-their switches and allowed self-heal operations to proceed.
-
-Roughly 12 hours later, the network failures returned on one node. CityCloud
-identified the cause as driver issue and updated the downed node, returning
-service. However, the outage resulted in data inconsistency between GlusterFS
-pairs:
-
-> As the servers lost storage abruptly there were certain types of Gluster
-> issues where files did not match each other on the two nodes in each storage
-> pair. There were also some cases of data corruption in the VMs filesystems
-> due to VMs going down in an uncontrolled way.
-
-
-## Managed hosting providers
-
-Running your own datacenter can be cheaper and more reliable than using public cloud infrastructure, but it also means you have to be a network and server administrator. What about managed hosting providers, which rent dedicated or virtualized hardware to users and often take care of the network and hardware setup for you?
-
-### An undetected GlusterFS split-brain
-
-Freistil IT hosts their servers with a colocation/managed-hosting provider.
-Their monitoring system <a
-href="http://www.freistil.it/2013/02/post-mortem-network-issues-last-week/">alerted
-Freistil</a> to 50--100% packet loss localized to a specific datacenter. The
-network failure, caused by a router firmware bug, returned the next day.
-Elevated packet loss caused the GlusterFS distributed filesystem to enter
-split-brain undetected:
-
-> Unfortunately, the malfunctioning network had caused additional problems
-> which we became aware of in the afternoon when a customer called our support
-> hotline because their website failed to deliver certain image files. We found
-> that this was caused by a split-brain situation on the storage cluster
-> “stor02″ where changes made on node “stor02b” weren’t reflected on “stor02a”
-> and the self-heal algorithm built into the Gluster filesystem was not able to
-> resolve this inconsistency between the two data sets.
-
-Repairing that inconsistency led to a "brief overload of the web nodes because
-of a short surge in network traffic."
-
-
-### An anonymous hosting provider
-
-From what we can gather informally, *all* the major managed hosting providers
-experience regular network failures. One company running 100-200 nodes on a
-major hosting provider reported that in a 90-day period the provider's network
-went through five distinct periods of partitions. Some partitions disabled connectivity between the provider's cloud network and the public internet, and others separated the cloud network from the provider's internal managed-hosting network. The failures caused unavailability but, because this company wasn't running any significant distributed systems *across* those partitioned networks, there were no major inconsistencies.
-
-
-### Pacemaker/Heartbeat split-brain
-
-A post to Linux-HA <a
-href="http://readlist.com/lists/lists.linux-ha.org/linux-ha/6/31964.html">details a long-running partition between a Heartbeat pair</a>,
-in which two Linode VMs have each declared the other dead and claimed a
-shared IP for themselves. Successive posts suggest further network problems:
-emails failed to dispatch due to DNS resolution failure, and nodes reported
-"network unreachable." In this case, the impact appears to have been minimal--in
-part because the partitioned application was just a proxy.
-
-
-
 ## Cloud providers
 
 Large-scale virtualized environments are notorious for transient latency,
@@ -519,7 +413,6 @@ to over 8.2 hours for hardware-related failures (median 2.7 and 32
 minutes; 95th percentile of 19.9 minutes and 3.7 days).
 
 
-
 ## Global routing failure
 
 Some network failures take place on a globally distributed scale.
@@ -578,6 +471,110 @@ href="http://www.renesys.com/2005/12/internetwide-nearcatastrophela/">in
 *entire* internet), and <a
 href="http://merit.edu/mail.archives/nanog/1997-04/msg00380.html">in 1997</a>.
 
+
+## NICs and drivers
+
+### BCM5709 and friends
+
+Unreliable NIC hardware or drivers are implicated in a broad array of
+partitions. <a href="http://www.spinics.net/lists/netdev/msg210485.html">Marc
+Donges and Michael Chan</a> bring us a thrilling report of the popular BCM5709
+chipset abruptly dropping inbound *but not outbound* packets to a machine.
+Because the NIC dropped inbound packets, the node was unable to service requests.
+However, because it could still *send* heartbeats to its hot spare via keepalived, the
+spare considered the primary alive and refused to take over. The service was unavailable
+for five hours and did not recover without a reboot.
+
+Sven Ulland <a
+href="http://www.spinics.net/lists/netdev/msg210491.html">followed up</a>,
+reporting the same symptoms with the BCM5709S chipset on Linux
+2.6.32-41squeeze2. Despite pulling commits from mainline which supposedly fixed
+a similar set of issues with the bnx2 driver, they were unable to resolve the
+issue until version 2.6.38.
+
+Since Dell shipped a large number of servers with the Broadcom BCM5709, the
+impact of these firmware bugs was widely observed. For instance, the 5709 had a bug
+in its <a
+href="http://monolight.cc/2011/08/flow-control-flaw-in-broadcom-bcm5709-nics-and-bcm56xxx-switches/">802.3x
+flow control code</a> causing them to spew PAUSE frames when the
+chipset crashed or its buffer filled out. This problem was magnified by the
+BCM56314 and BCM56820 switch-on-a-chip devices (a component in a number of
+Dell's top-of-rack switches), which, by default, spewed PAUSE frames at *every*
+interface trying to communicate with the offending 5709 NIC. This led to
+cascading failures on entire switches or networks.
+
+The bnx2 driver could also cause transient or flapping network failures, as
+described in this <a
+href="http://elasticsearch-users.115913.n3.nabble.com/Cluster-Split-Brain-td3333510.html">ElasticSearch
+split brain report</a>. Meanwhile, the the Broadcom 57711 was notorious for
+causing <a
+href="http://communities.vmware.com/thread/284628?start=0&tstart=0">extremely
+high latencies under load with jumbo frames</a>, a particularly thorny issue
+for ESX users with iSCSI-backed storage.
+
+
+### A GlusterFS partition caused by a driver bug
+
+After a scheduled upgrade, <a
+href="https://www.citycloud.eu/cloud-computing/post-mortem/">CityCloud noticed
+unexpected network failures</a> in two distinct GlusterFS pairs</a>, followed
+by a third. Suspecting link aggregation, CityCloud disabled the feature on
+their switches and allowed self-heal operations to proceed.
+
+Roughly 12 hours later, the network failures returned on one node. CityCloud
+identified the cause as driver issue and updated the downed node, returning
+service. However, the outage resulted in data inconsistency between GlusterFS
+pairs:
+
+> As the servers lost storage abruptly there were certain types of Gluster
+> issues where files did not match each other on the two nodes in each storage
+> pair. There were also some cases of data corruption in the VMs filesystems
+> due to VMs going down in an uncontrolled way.
+
+
+## Managed hosting providers
+
+Running your own datacenter can be cheaper and more reliable than using public cloud infrastructure, but it also means you have to be a network and server administrator. What about managed hosting providers, which rent dedicated or virtualized hardware to users and often take care of the network and hardware setup for you?
+
+### An undetected GlusterFS split-brain
+
+Freistil IT hosts their servers with a colocation/managed-hosting provider.
+Their monitoring system <a
+href="http://www.freistil.it/2013/02/post-mortem-network-issues-last-week/">alerted
+Freistil</a> to 50--100% packet loss localized to a specific datacenter. The
+network failure, caused by a router firmware bug, returned the next day.
+Elevated packet loss caused the GlusterFS distributed filesystem to enter
+split-brain undetected:
+
+> Unfortunately, the malfunctioning network had caused additional problems
+> which we became aware of in the afternoon when a customer called our support
+> hotline because their website failed to deliver certain image files. We found
+> that this was caused by a split-brain situation on the storage cluster
+> “stor02″ where changes made on node “stor02b” weren’t reflected on “stor02a”
+> and the self-heal algorithm built into the Gluster filesystem was not able to
+> resolve this inconsistency between the two data sets.
+
+Repairing that inconsistency led to a "brief overload of the web nodes because
+of a short surge in network traffic."
+
+
+### An anonymous hosting provider
+
+From what we can gather informally, *all* the major managed hosting providers
+experience regular network failures. One company running 100-200 nodes on a
+major hosting provider reported that in a 90-day period the provider's network
+went through five distinct periods of partitions. Some partitions disabled connectivity between the provider's cloud network and the public internet, and others separated the cloud network from the provider's internal managed-hosting network. The failures caused unavailability but, because this company wasn't running any significant distributed systems *across* those partitioned networks, there were no major inconsistencies.
+
+
+### Pacemaker/Heartbeat split-brain
+
+A post to Linux-HA <a
+href="http://readlist.com/lists/lists.linux-ha.org/linux-ha/6/31964.html">details a long-running partition between a Heartbeat pair</a>,
+in which two Linode VMs have each declared the other dead and claimed a
+shared IP for themselves. Successive posts suggest further network problems:
+emails failed to dispatch due to DNS resolution failure, and nodes reported
+"network unreachable." In this case, the impact appears to have been minimal--in
+part because the partitioned application was just a proxy.
 
 
 ## GC, Disk IO, and CPU load
