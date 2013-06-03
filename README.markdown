@@ -48,7 +48,7 @@ behavior for distributed systems design</a>, the answer to this question radical
 A key challenge in this debate is the lack of evidence. We have few normalized bases for comparing network and application reliability and even less data for each metric. We can track link availability and estimate packet loss, but understanding the end-to-end effect on *applications* is more difficult. The evidence we do have is difficult to generalize: it is often deployment-specific and closely tied to particular vendors, topologies, and application designs. Worse, even when an organization has clear picture of their network's behavior, they rarely share specifics.
 
 Finally, distributed systems are designed to resist failure, which means
-*noticable* outages often depend on a complex interaction of failure modes.
+*noticeable* outages often depend on a complex interaction of failure modes.
 Redundancy, load, timing, and application semantics all play a role. Many applications silently degrade when the network fails, and resulting problems may not be understood for some time, when they are noticed at all.
 
 As a result, much of what we know about the failure modes in real-wold
@@ -213,7 +213,7 @@ the problem.
 > github.com.
 
 The partition caused inconsistency in the MySQL database--both internally and
-between MySQL and other datastores, like Redis. Because foreign key
+between MySQL and other data stores, like Redis. Because foreign key
 relationships were not consistent, Github showed private repositories to the
 wrong user's dashboards, and incorrectly routed some newly created repos.
 
@@ -657,7 +657,7 @@ href="http://news.cnet.com/8301-10784_3-9878655-7.html">briefly rendered it
 unreachable</a>. In 2010, a group of Duke University researchers achieved
 similar effect by <a
 href="http://www.merit.edu/mail.archives/nanog/msg11505.html">testing</a> an
-experimental flag in the BGP protocol. Similar incidents have occured <a
+experimental flag in the BGP protocol. Similar incidents have occurred <a
 href="http://www.renesys.com/2006/01/coned-steals-the-net/">in 2006</a>
 (knocking sites like Martha Stewart Living and The New York Times offline), <a
 href="http://www.renesys.com/2005/12/internetwide-nearcatastrophela/">in
