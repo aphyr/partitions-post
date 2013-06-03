@@ -609,22 +609,28 @@ databases.
 
 ## WAN failures
 
+Microsoft's SIGCOMM paper aligns with our anecdotal knowledge; WAN links
+between datacenters appear to fail less often, but more catastrophically, than
+the links within the datacenter itself. These failures are particularly
+interesting because HA systems often require distribution across multiple
+availability zones or datacenters--which comes with new challenges in
+latency and partition severity.
+
 ### PagerDuty
 
 PagerDuty designed their system to remain available in the face of node,
 datacenter, or even *provider* failure; their services are replicated between
-two EC2 availability zones *in separate regions* and another in Linode. On
-April 13, 2013, <a
+two EC2 regions and a datacenter in Linode. On April 13, 2013, <a
 href="http://blog.pagerduty.com/2013/04/outage-post-mortem-april-13-2013/">an
 AWS peering point in northern California degraded</a>, causing connectivity
-issues for one of PagerDuty's nodes. As latencies between AWS availability
+issues for one of PagerDuty's EC2 nodes. As latencies between AWS availability
 zones rose, the notification dispatch system lost quorum and stopped
 dispatching messages entirely.
 
 Even though PagerDuty's infrastructure was designed with partition tolerance in
-mind, including the loss of an entire datacenter, correlated failures in two
-Amazon AZs caused 18 minutes of unavailability, dropping inbound API requests
-and delaying queued pages until quorum was re-established.
+mind, correlated failures in two Amazon AZs caused 18 minutes of
+unavailability, dropping inbound API requests and delaying queued pages until
+quorum was re-established.
 
 
 ### CENIC Study
