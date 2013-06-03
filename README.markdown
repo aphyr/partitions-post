@@ -24,10 +24,12 @@ $(document).ready(function() {
 *I've been discussing <a href="/tags/jepsen">Jepsen</a> and partition tolerance with the inimitable <a href="http://www.bailis.org/">Peter Bailis</a>, and he was kind enough to join me in writing this post. You may be interested in his upcoming work on <a href="http://arxiv.org/pdf/1302.0309.pdf">Highly Available Transactions</a>.*
 
 Partitions are a contentious matter. Some people claim that modern IP networks
-are reliable, and that we are too concerned with designing for *theoretical*
-failure modes. Node failures are common, they accept, but we can reliably
-detect those failures, which radically simplifies the design of databases,
-queues, and applications.
+are reliable, and that we are <a href="http://antirez.com/news/57">too
+concerned</a> with designing for *theoretical* failure modes. Single-node
+failures are common, they accept, but we can <a
+href="http://blog.voltdb.com/clarifications-cap-theorem-and-data-related-errors/">reliably
+detect and handle those failures</a>, which radically simplifies the design of
+databases, queues, and applications.
 
 Conversely, some <a
 href="http://www.rgoarchitects.com/files/fallacies.pdf">subscribe</a> to Peter
