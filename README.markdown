@@ -650,14 +650,16 @@ minutes; 95th percentile of 19.9 minutes and 3.7 days).
 
 ## Global routing failure
 
+Some network failures take place on a globally distributed scale.
+
 ### Cloudflare
 
-CloudFlare runs 23 globally distributed datacenters with redundant network
-paths and anycast failover. <a
+CloudFlare runs 23 datacenters with redundant network paths and anycast
+failover. <a
 href="http://blog.cloudflare.com/todays-outage-post-mortem-82515">In response
 to a DDoS attack against one of their customers</a>, their operations team
 deployed a new firewall rule to drop packets of a specific size. Juniper's
-FlowSpec protocol propagated that rule to all CloudFlare edge routers, where:
+FlowSpec protocol propagated that rule to all CloudFlare edge routers, but then--
 
 > What should have happened is that no packet should have matched that rule
 > because no packet was actually that large. What happened instead is that the
@@ -672,22 +674,21 @@ reboot automatically, and inaccessible management ports.
 > overloaded their resources.
 
 CloudFlare monitors their network carefully; the ops team had immediate
-visibility of the failure. However, coordinating globally distributed systems
+visibility into the failure. However, coordinating globally distributed systems
 takes is complex, and calling on-site engineers to find and reboot routers by
-hand takes time. Recovery began in 30 minutes and was complete after an hour of
-unavailability.
+hand takes time. Recovery took 30 minutes to begin, and was complete after an
+hour of unavailability.
 
-### Juniper Routing Bug
+### Juniper routing bug
 
-The software running inside network hardware (i.e., firmware) is subject to
-bugs just like the rest of computer software. A bug in a router upgrade in
-Juniper Networks's routers <a
+A firmware bug introduced as a part of an upgrade in Juniper Networks's routers
+<a
 href="http://www.eweek.com/c/a/IT-Infrastructure/Bug-in-Juniper-Router-Firmware-Update-Causes-Massive-Internet-Outage-709180/">caused
 outages</a> in Level 3 Communications's networking backbone. This subsequently
 knocked services like Time Warner Cable and RIM BlackBerry, and several UK
 internet service providers offline.
 
-### Global BGP Outages
+### Global BGP outages
 
 There have been several global Internet outages related to BGP
 misconfiguration. Notably, in 2008, Pakistan Telecom, responding to a
@@ -708,9 +709,9 @@ href="http://merit.edu/mail.archives/nanog/1997-04/msg00380.html">in 1997</a>.
 
 ## Where do we go from here?
 
-This post is meant as a reference argument; to illustrate that the problem is
-real, and deserves our consideration. Processes, nodes, NICs, switches,
-networks, and globally distributed networks do fail, and the economic
+This post is meant as a reference argument; to illustrate that partitions are
+real and deserve our engineering consideration. Processes, nodes, NICs,
+switches, networks, and globally distributed networks do fail, and the economic
 consequences are real. Moreover, for each of these failure staories 
 
 Failures can occur in systems which are stable for months, or be triggered as a
