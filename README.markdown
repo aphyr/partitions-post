@@ -65,7 +65,7 @@ post, we'd like to bring a few of these stories together. We believe this is a
 first step towards a more open and honest discussion of real-world partition
 behavior, and, ultimately, more robust distributed systems design.
 
-## Hints from big deployments
+## Rumblings from large deployments
 
 To start off, let's consider evidence from big players in distributed systems:
 companies running globally distributed infrastructure with hundreds of
