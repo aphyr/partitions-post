@@ -508,7 +508,8 @@ application was just a proxy.
 Large-scale virtualized environments are notorious for transient latency,
 dropped packets, and full-blown network partitions, often affecting a
 particular software version or availability zone. Sometimes the failures occur
-between specific subsections of the provider's datacenter, possibly an artifact of underlying network topologies.
+between specific subsections of the provider's datacenter, revealing planes of
+cleavage in the underlying hardware topology.
 
 ### An isolated MongoDB primary on EC2
 
