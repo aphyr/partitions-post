@@ -22,7 +22,7 @@ $(document).ready(function() {
 </script>
 
 *I've been discussing <a href="/tags/jepsen">Jepsen</a> and partition tolerance
-with <a href="http://www.bailis.org/">Peter Bailis</a> over the past few weeks,
+with <a href="https://twitter.com/pbailis/">Peter Bailis</a> over the past few weeks,
 and I'm honored to present this post as a collaboration between the two of us.
 Our sincere appreciation to everyone who contributed their research and
 experience to this piece, as well.*
@@ -30,13 +30,13 @@ experience to this piece, as well.*
 Network partitions are a contentious subject. Some claim that modern
 networks are reliable and that we are too concerned with designing for
 *theoretical* failure modes. They often accept that single-node failures are
-common, but argue that we can <a
+common but argue that we can <a
 href="http://blog.voltdb.com/clarifications-cap-theorem-and-data-related-errors/">reliably
 detect and handle them</a>. Conversely, others <a
 href="http://www.rgoarchitects.com/files/fallacies.pdf">subscribe</a> to Peter
 Deutsch's <a
 href="https://blogs.oracle.com/jag/resource/Fallacies.html">Fallacies of
-Distributed Computing</a> and disagree. They'll attest that partitions do occur
+Distributed Computing</a> and disagree. They attest that partitions do occur
 in their systems, and that, as James Hamilton of Amazon Web Services [neatly
 summarizes](http://perspectives.mvdirona.com/2010/04/07/StonebrakerOnCAPTheoremAndDatabases.aspx),
 "network partitions should be rare but net gear continues to cause more issues
@@ -54,7 +54,7 @@ when an organization has clear picture of their network's behavior, they rarely
 share specifics. Finally, distributed systems are designed to resist failure,
 which means *noticeable* outages often depend on complex interactions of
 failure modes. Many applications silently degrade when the network fails, and
-resulting problems may not be understood for some time--if they are discovered
+resulting problems may not be understood for some time--if they are understood
 at all.
 
 As a result, much of what we know about the failure modes of real-wold
@@ -76,11 +76,11 @@ are likely the biggest distributed systems ever deployed. Their publications
 system behavior and large-scale statistical trends, and indicate (often
 obliquely) that partitions are a significant concern in their deployments.
 
-### The Microsoft datacenter Study
+### The Microsoft Datacenter Study
 
-Microsoft Research <a
+A team from the University of Toronto and Microsoft Research <a
 href="http://research.microsoft.com/en-us/um/people/navendu/papers/sigcomm11netwiser.pdf">studied
-the behavior</a> of network failures in several of their datacenters. They
+the behavior</a> of network failures in several of Microsoft's datacenters. They
 found an average failure rate of 5.2 devices per day and 40.8 links per day
 with a median time to repair of approximately five minutes (and up to one
 week). While the researchers note that correlating link failures and
@@ -128,7 +128,7 @@ While Google doesn't tell us much about the application-level consequences of
 their network partitions, "Lessons From Distributed Systems" suggests they
 are a significant concern, citing the challenge of "[e]asy-to-use abstractions
 for resolving conflicting updates to multiple versions of a piece of state" as
-being useful for "reconciling replicated state in different data centers after
+useful in "reconciling replicated state in different data centers after
 repairing a network partition."
 
 
@@ -185,7 +185,7 @@ partition, but customers complained they were unable to delete or create
 indices. The logs revealed that servers were repeatedly trying to recover
 unassigned indices, which "poisoned the cluster's attempt to service normal
 traffic which changes the cluster state." The failure led to 20 minutes of
-unavailability, and six hours of degraded service.
+unavailability and six hours of degraded service.
 
 Bonsai concludes by noting that large-scale ElasticSearch clusters should use
 dedicated nodes which handle routing and leader election without serving normal
@@ -245,7 +245,7 @@ the problem.
 The partition caused inconsistency in the MySQL database--both between the
 secondary and primary, and between MySQL and other data stores like Redis.
 Because foreign key relationships were not consistent, Github showed private
-repositories to the wrong user's dashboards, and incorrectly routed some newly
+repositories to the wrong users' dashboards and incorrectly routed some newly
 created repos.
 
 Github thought carefully about their infrastructure design, and were still
@@ -324,9 +324,8 @@ pairs:
 
 ## Datacenter network failures
 
-Individual interfaces can fail, but those typically appear as single-node
-outages. A more dangerous problem are failures somewhere in the physical
-network. Switches are subject to power failure, misconfiguration, firmware
+Individual network interfaces can fail, but they typically appear as single-node
+outages. Failures located in the physical network are often more nefarious. Switches are subject to power failure, misconfiguration, firmware
 bugs, topology changes, cable damage, and malicious traffic. Their failure
 modes are accordingly diverse:
 
@@ -360,7 +359,7 @@ suddenly lost access to their network.
 > the loop domain.
 
 According to the BPDU standard, the flood *shouldn't have happened*. But it
-did, and this deviation from the system assumptions resulted in two hours of
+did, and this deviation from the system's assumptions resulted in two hours of
 total service unavailability.
 
 
@@ -384,7 +383,7 @@ to every interface.
 
 ### Mystery RabbitMQ partitions
 
-Sometimes, nobody knows why the system partitioned. This <a
+Sometimes, nobody knows why a system partitions. This <a
 href="http://serverfault.com/questions/497308/rabbitmq-network-partition-error">RabbitMQ
 failure</a> seems like one of those cases: few retransmits, no large gaps
 between messages, and no clear loss of connectivity between nodes. Upping the
@@ -437,7 +436,7 @@ HA failover to declare each other dead, and to issue STONITH (Shoot The Other
 Node In The Head) messages to one another. The network partition delayed
 delivery of those messages, causing some fileserver pairs to believe they were
 *both* active. When the network recovered, both nodes shot each other at the
-same time. With both nodes dead, files belonging to that pair were unavailable.
+same time. With both nodes dead, files belonging to the pair were unavailable.
 
 To prevent filesystem corruption, DRBD requires that administrators ensure the
 original primary node is still the primary node before resuming replication.
@@ -488,7 +487,7 @@ connectivity between the provider's cloud network and the public internet, and
 others separated the cloud network from the provider's internal managed-hosting
 network. The failures caused unavailability, but because this company wasn't
 running any significant distributed systems *across* those partitioned
-networks, there was no inconsistency or data loss.
+networks, there was no observed inconsistency or data loss.
 
 
 ### Pacemaker/Heartbeat split-brain
@@ -509,8 +508,7 @@ application was just a proxy.
 Large-scale virtualized environments are notorious for transient latency,
 dropped packets, and full-blown network partitions, often affecting a
 particular software version or availability zone. Sometimes the failures occur
-between specific subsections of the provider's datacenter, revealing internal
-planes of cleavage.
+between specific subsections of the provider's datacenter, possibly an artifact of underlying network topologies.
 
 ### An isolated MongoDB primary on EC2
 
@@ -638,10 +636,8 @@ databases.
 While we have largely focused on failures over local area networks (or
 near-local networks), wide area network (WAN) failures are also common--if less
 frequently documented. These failures are particularly interesting because
-there are often fewer redundant WAN links, and because systems guaranteeing
-high availability (and disaster recovery) require distribution across multiple
-datacenters. Accordingly, graceful degradation under partitions or increased
-latency is especially important for geographically widespread services.
+there are often fewer redundant WAN routes and because systems guaranteeing
+high availability (and disaster recovery) often require distribution across multiple datacenters. Accordingly, graceful degradation under partitions or increased latency is especially important for geographically widespread services.
 
 ### PagerDuty
 
@@ -721,10 +717,10 @@ misconfiguration. Notably, in 2008, Pakistan Telecom, responding to a
 government edict to block YouTube.com, incorrectly advertised its (blocked)
 route to other provides, which hijacked traffic from the site and <a
 href="http://news.cnet.com/8301-10784_3-9878655-7.html">briefly rendered it
-unreachable</a>. In 2010, a group of Duke University researchers achieved
+unreachable</a>. In 2010, a group of Duke University researchers achieved a
 similar effect by <a
 href="http://www.merit.edu/mail.archives/nanog/msg11505.html">testing</a> an
-experimental flag in the BGP protocol. Similar incidents have occurred <a
+experimental flag in the BGP protocol. Similar incidents occurred <a
 href="http://www.renesys.com/2006/01/coned-steals-the-net/">in 2006</a>
 (knocking sites like Martha Stewart Living and The New York Times offline), <a
 href="http://www.renesys.com/2005/12/internetwide-nearcatastrophela/">in
@@ -736,15 +732,9 @@ href="http://merit.edu/mail.archives/nanog/1997-04/msg00380.html">in 1997</a>.
 ## Where do we go from here?
 
 This post is meant as a reference point--to illustrate that, according to a
-wide array of accounts, partitions occur in many real-world deployments.
-Processes, servers, NICs, switches, local and wide area networks: all can fail,
-and the economic consequences are real. Network outages can suddenly arise in
-systems that are stable for months at a time, or during routine upgrades or
-emergency maintenance. The consequences of these outages can range from
-increased latency and temporary unavailability to inconsistency, corruption,
-and data loss. Split-brain is not an academic concern: it happens to all kinds
-of systems--sometimes for *days on end*. Partitions deserve serious
-consideration.
+wide range of accounts, partitions occur in many real-world environments.
+Processes, servers, NICs, switches, local and wide area networks can all fail,
+and the resulting economic consequences are real. Network outages can suddenly arise in systems that are stable for months at a time, during routine upgrades, or as a result of emergency maintenance. The consequences of these outages range from increased latency and temporary unavailability to inconsistency, corruption, and data loss. Split-brain is not an academic concern: it happens to all kinds of systems--sometimes for *days on end*. Partitions deserve serious consideration.
 
 On the other hand, some networks really *are* reliable. Engineers at major
 financial firms report that despite putting serious effort into designing
@@ -755,14 +745,13 @@ prevent outages.
 However, not all organizations can afford the cost or operational complexity of
 highly reliable networks. From Google and Amazon (who operate commodity
 and/or low-cost hardware due to sheer scale) to one-man startups built on
-shoestring budgets, isolating network failures are a real risk.
+shoestring budgets, communication-isolating network failures are a real risk.
 
-It's important to consider that risk *before* a partition occurs--because it's
+It's important to consider this risk *before* a partition occurs--because it's
 much easier to make decisions about partition tolerance on a whiteboard than to
-redesign, re-engineer, and upgrade a complex system in production
+redesign, re-engineer, and upgrade a complex system in a production
 environment--especially when it's throwing errors at your users. For some
-applications, failure *is* an option--but you should characterize that failure
-as a part of the design.
+applications, failure *is* an option--but you should characterize and explicitly account for it as a part of your design.
 
 *We invite you to contribute your own experiences with or without network
 partitions. Open a pull request on https://github.com/aphyr/partitions-post,
