@@ -211,8 +211,8 @@ cluster resources between nodes. They use Percona Replication Manager, a
 resource agent for Pacemaker, to replicate their MySQL database between three
 nodes.
 
-On September 10th, 2012, a routine database migration caused unexpectedly high
-load on the MySQL primary. Percona Replication Manager, unable to perform
+On September 10th, 2012, <a href="https://github.com/blog/1261-github-availability-this-week">a routine database migration caused unexpectedly high
+load on the MySQL primary</a>. Percona Replication Manager, unable to perform
 health checks against the busy MySQL instance, decided the primary was down and
 promoted a secondary. The secondary had a cold cache and performed poorly.
 Normal query load on the node caused it to slow down, and Percona failed *back*
