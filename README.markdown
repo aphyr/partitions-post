@@ -448,11 +448,11 @@ significantly degraded.
 
 
 
-## Managed hosting providers
+## Hosting providers
 
 Running your own datacenter can be cheaper and more reliable than using public
 cloud infrastructure, but it also means you have to be a network and server
-administrator. What about managed hosting providers, which rent dedicated or
+administrator. What about hosting providers, which rent dedicated or
 virtualized hardware to users and often take care of the network and hardware
 setup for you?
 
