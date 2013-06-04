@@ -21,11 +21,12 @@ $(document).ready(function() {
 
 </script>
 
+
 *I've been discussing <a href="/tags/jepsen">Jepsen</a> and partition tolerance
-with <a href="https://twitter.com/pbailis/">Peter Bailis</a> over the past few weeks,
-and I'm honored to present this post as a collaboration between the two of us.
-Our sincere appreciation to everyone who contributed their research and
-experience to this piece, as well.*
+with <a href="https://twitter.com/pbailis/">Peter Bailis</a> over the past few
+weeks, and I'm honored to present this post as a collaboration between the two
+of us.  We'd also like to extend our sincere appreciation to everyone who
+contributed their research and experience to this piece.*
 
 Network partitions are a contentious subject. Some claim that modern
 networks are reliable and that we are too concerned with designing for
