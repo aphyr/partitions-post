@@ -11,7 +11,7 @@ $(document).ready(function() {
   sections.slice(0, -1).each(function() {
     $(this).css({cursor: 'pointer'});
     $(this).prepend("➤ ");
-    $(this).nextUntil(header).wrapAll('<div class="more" style="display: none" />');
+    $(this).nextUntil(header).wrapAll('<div class="more" />');
     $(this).click(function() {
       $(this).next('.more').slideToggle();
     });
