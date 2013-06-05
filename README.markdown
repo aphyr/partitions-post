@@ -321,6 +321,13 @@ pairs:
 > pair. There were also some cases of data corruption in the VMs filesystems
 > due to VMs going down in an uncontrolled way.
 
+### Intel 82574 Packet of Death
+
+A certain manufacturer of motherboards failed to flash the EEPROM correctly 
+for their Intel 82574 based system. The result was a very hard to diagnose error
+where an inbound packet of a particular structure would disable the NIC. Only a cold
+restart would bring the system back to normal. This issue, as usual, passed QA and
+was not discovered until it was in a production environement.
 
 
 ## Datacenter network failures
