@@ -637,6 +637,32 @@ on AWS. For example, <a href="https://status.heroku.com/incidents/151">Heroku
 reported</a> between 16 and 60 hours of unavailability for their users'
 databases.
 
+### Isolated Redis primary on EC2
+
+On July 18, 2013, <a
+href="http://www.twilio.com/blog/2013/07/billing-incident-post-mortem.html">Twilio's
+billing system, which stores account credits in Redis, failed.</a>. A network
+partition isolated the Redis primary from all billing secondaries. Because
+Twilio did not promote a new secondary, writes to the primary remained
+consistent. However, when the primary became visible to the secondaries again,
+all secondaries initiated a full resynchronization with the primary
+simultaenously. This overloaded the primary, causing services which relied on
+the Redis primary to fail.
+
+The ops team restarted the Redis primary to address the high load; but on
+restarting, the Redis primary reloaded an incorrect configuration file which
+caused it to become a slave of itself. The primary entered read-only mode,
+which stopped all billing system writes. With all account balances at zero, and
+read-only, every Twilio call caused the billing system to automatically
+re-charge customer credit cards. 1.1% of customers were overbilled, for roughly
+40 minutes. <a href="https://news.ycombinator.com/item?id=6094813">Appointment
+Reminder</a>, for example, reported that every SMS message and phone call they
+issued resulted in a $500 charge to their credit card, which stopped accepting
+charges after $3500.
+
+Twilio recovered the billing state from an independent billing system--a
+relational datastore--and after some hiccups, restored proper service,
+including credits to affected users.
 
 ## WAN links
 
