@@ -32,7 +32,7 @@ Network partitions are a contentious subject. Some claim that modern
 networks are reliable and that we are too concerned with designing for
 *theoretical* failure modes. They often accept that single-node failures are
 common but argue that we can <a
-href="http://blog.voltdb.com/clarifications-cap-theorem-and-data-related-errors/">reliably
+href="http://web.archive.org/web/20140327023856/http://voltdb.com/clarifications-cap-theorem-and-data-related-errors/">reliably
 detect and handle them</a>. Conversely, others <a
 href="http://www.rgoarchitects.com/files/fallacies.pdf">subscribe</a> to Peter
 Deutsch's <a
