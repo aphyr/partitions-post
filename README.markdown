@@ -191,18 +191,23 @@ unavailability and six hours of degraded service.
 Bonsai concludes by noting that large-scale ElasticSearch clusters should use
 dedicated nodes which handle routing and leader election without serving normal
 requests for data, to prevent partitions under heavy load. They also emphasize
-the importance of request throttling and setting proper quorum values. 
+the importance of request throttling and setting proper quorum values.
 
-### Long GC pauses
+### Long GC pauses and IO
 
-Stop-the-world garbage collection can force application latencies on the order
-of seconds to minutes. As Searchbox.io <a
-href="http://blog.searchbox.io/blog/2013/03/03/january-postmortem">observed</a>,
+Stop-the-world garbage collection and blocking for disk IO can cause runtime
+latencies on the order of seconds to minutes. As <a
+href=http://blog.searchbox.io/blog/2013/03/03/january-postmortem">Searchbox
+IO</a> and [dozens of other production
+users](https://github.com/elasticsearch/elasticsearch/issues/2488) have found,
 GC pressure in an ElasticSearch cluster can cause secondary nodes to declare a
 primary dead and to attempt a new election. Because their configuration used a
 low value of `zen.minimum_master_nodes`, ElasticSearch was able to elect two
-simultaneous primaries, leading to inconsistency and downtime.
-
+simultaneous primaries, leading to inconsistency and downtime. Even with
+`minimum_master_nodes` larger than a majority, ElasticSearch does not prevent
+nodes from taking part in multiple network components; GC pauses and high
+IO_WAIT times due to IO can cause split brain, write loss, and index
+corruption.
 
 ### MySQL overload and a Pacemaker segfault
 
