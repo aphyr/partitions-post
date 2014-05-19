@@ -795,4 +795,4 @@ applications, failure *is* an option--but you should characterize and explicitly
 partitions. Open a pull request on https://github.com/aphyr/partitions-post,
 leave a comment, write a blog post, or release a post-mortem. Data will inform
 this conversation, future designs, and, ultimately, the availability of the
-systems you depend on.*
+systems we all depend on.*
