@@ -1,0 +1,58 @@
+My colleague Dr. Chiu Tan forwarded your post to me today. I have found myself compelled to reply since all the reported incidents are related to our work since 2000 when the CAP Conjecture was proposed, and since 1982 when the original prototype Synergyparallel processing system was first developed. Although distributed and parallel data processing technologies have very much progressed, the CAP Conjecture and Theorem and the performance vs. reliability conflict continued to challenge users, application and system developers.
+
+Consistent to the reports in the "partitions-post", our studies have found that the commonly accepted virtual circuit concept is
+the primary culprit. This finding is supported by the collective reports in this post.
+
+The implications of this finding are more profound. For the last three decades, computer science and computer software/system 
+developers have made overly optimistic assumptions on the deliverable services of data communication. These assumptions encouraged arbitrary user interface designs and the lack of retransmission discipline in the application level and in the processing infrastructures. The virtual circuit concept also drove the research community divisions that separates applications from the lower level supporting subsystems, such as communication, storage and processing infrastructures.
+
+We have contributed the Synergy project to the Git. There is a separate repository of Synergy applications under the same user name.
+
+We also have published our findings. Here is a partial list of related references:
+
+[1]	Justin Y. Shi, “Statistic Multiplexed Computing – A Neglected Path to Unlimited Scalability,” 2nd Software Engineering Assembly, National Center for Atmosphere Research (NCAR), April 2, 2013.
+[2]	CCC Community White Paper, “21st Century Computer Architecture,” 2012 http://csl.stanford.edu/~christos/publications/2012.21stcenturyarchitecture.whitepaper.pdf 
+[3]	Wikipedia, “Amdahl’s Law,” http://en.wikipedia.org/wiki/Amdahl's_law 
+[4]	Wikipedia, “Gustafson’s Law,” http://en.wikipedia.org/wiki/Gustafson's_law 
+[5]	Justin Y. Shi, “Reevaluating Amdahl’s Law and Gustafson’s Law,” 1996. http://spartan.cis.temple.edu/shi/public_html/docs/amdahl/amdahl.html 
+[6]	Yuan Shi, “System for High-Level Virtual Computer with Heterogenous Operating Systems,” US Patent #5,381,534, 1995.
+[7]	Yuan Shi, “A Distributed Programming Model and Its Applications to Computation Intensive Problems for Heterogeneous Environments,” AIP Conference, Earth and Space Science Information Systems, Pasadena, CA., 1992.
+[8]	Justin Y. Shi (Temple), Davide Del Vento (NCAR). “Statistic Multiplexed Computing – A Blueprint for Exascale Computing,” Research Forum Presentation, Supercomputing 2013, Denver, CO., 2013.
+[9]	Justin Y. Shi. “MPI Application Wrapping – A Blueprint for Practical Exascale Computing,” in review for Supercomputing 2014. 
+[10]	Moussa Taifi. “Stateless Parallel Processing Architecture for Exascale and Auction-based HPC Clouds,” Ph.D. Dissertation, CIS Department, Temple University. 2013.
+[11]	Yuan Shi, “Program Scalability Analysis,” IASTED International Conference on Parallel and Distributed Computing, 1997. http://spartan.cis.temple.edu/shi/public_html/super96/timing/timing.html 
+[12]	Alan Fekete, Nancy A. Lynch, Yishay Mansour, John Spinelli, “The Impossibility of Implementing Reliable Communication in the Face of Crashes,” Journal of the ACM, 1993. http://65.54.113.26/Publication/787440/the-impossibility-of-implementing-reliable-communication-in-the-face-of-crashes 
+[13]	Justin Y. Shi, Moussa Taifi, Abdallah Khreishah, Jie Wu, “Tuple Switching Network – When Slower Maybe Better,” Journal of Parallel and Distributed Computing, 2012. http://www.sciencedirect.com/science/article/pii/S0743731512000263
+[14]	Hadoop, http://hadoop.apache.org/ , 2014
+[15]	ampLab. “Spark - Lightening Fast Cluster Computing,” 2014 https://amplab.cs.berkeley.edu/projects/spark-lightning-fast-cluster-computing/  
+[19]	Justin Y. Shi. “Statistic Multiplexed Computing (SMC) -- A Blueprint of Exascale Computing,” Research Exhibit Forum Presentation, Supercomputing 2013, Denver, CO. [online] http://cis-linux2.temple.edu/~shi/SC13/SMC-SC13.pdf 
+[20]	Justin Y. Shi. “Synergy V3.0+”, [online] https://github.com/jys673/Synergy30/blob/master/COPYRIGHT, 2014.
+[22]	Tanenbaum and Steen 2006, Distributed Systems: Principles and Paradigms, 2nd Edition, ISBN-10: 0132392275 | ISBN-13: 978-0132392273, Pearson/Prentice Hall.
+[23]	Justin Y. Shi. Chapter 19: Fundamentals of cloud application architectures, “Cloud Computing: Methodology, System, and Applications.” CRC, Taylor & Francis Group, 2011.
+[24]	Mobius strip. Bellevue College, 2013. [online] http://scidiv.bellevuecollege.edu/math/mobius.html .
+[25]	Berenson, Hal; Bernstein, Phil; Gray, Jim; Melton, Jim; O'Neil, Elizabeth; O'Neil, Patrick, 1995. "A Critique of ANSI SQL Isolation Levels", Proceedings of the 1995 ACM SIGMOD international Conference on Management of Data, pp. 1–10.
+[26]	Brewer, 2000. Towards robust distributed systems. Proceedings of the Annual ACM Symposium on Principles of Distributed Computing (2000) vol. 19 pp. 7-10 
+[27]	CISCO: Arrow Point Cookies, 2013. [online] http://www.cisco.com/en/US/products/hw/contnetw/ps789/products_tech_note09186a0080094398.shtml .
+[28]	Eric Brewer, 2000. “Towards Robust Distributed Systems,” PODC, Keynote, July 19, 2000.
+[29]	Eric Brewer, 2001. Lessons from giant-scale services. Internet Computing, IEEE (2001) vol. 5 (4) pp. 46 – 55
+[30]	Fanfan Xiong, 2009. “Resource Efficient Parallel VLDB with Customizable Degree of Redundancy”, Ph.D. Dissertation, CIS Department, Temple University. [online] http://cis-linux2.temple.edu/~shi/SC13/Fanfan-Dissertation-2009.pdf 
+[31]	Fox and Brewer, 1999. Harvest, yield, and scalable tolerant systems. Hot Topics in Operating Systems, 1999. Proceedings of the Seventh Workshop on (1999) pp. 174 – 178 
+[32]	Gilbert and Lynch, 2002. Brewer’s conjecture and the feasibility of consistent, available, partition-tolerant web services. ACM SIGACT News (2002) vol. 33 (2) pp. 59 
+[33]	Jake Luciani, 2012. “Cassandra File System Design,” DATATAX Blog [online] http://www.datastax.com/dev/blog/cassandra-file-system-design 
+[34]	Jim Gray, 1981. “The transaction concept: Virtues and limitations.” Tandem TR 81.3, Tandem Computers Inc.
+[35]	Jim Gray et al., 1997. “The dangers of replication and a solution,” International Conference on Management of Data  archive, 1996 ACM SIGMOD international conference on Management of data table of contents, Page 173 - 182 , Montreal, Quebec, Canada.
+[36]	John Little, 1961. "A Proof of the Queuing Formula: L=λW". Operations Research 9 (3): 383–387.
+[37]	Fekete, N. Lynch, Y. Mansour, J. Spinelli, 1993. The impossibility of implementing reliable communication in the face of crashes, J. ACM 40, 1087–1107.
+[38]	Leslie Lamport, 1978. “Time, Clocks, and the Ordering of Events in a Distributed System,” CACM, (Vol. 21, No. 7) pp 558-565.
+[39]	Michael Stonebraker, 1986. “The Case for Shared Nothing Architecture”, Database Engineering, Volume 9, Number 1.
+[40]	NoSQL Database, 2013. [online] http://nosql-database.org .
+[41]	Oracle.a, 2013. [online] “Oracle Tuxedo Resource Kit”, http://www.oracle.com/webapps/dialogue/ns/dlgwelcome.jsp?p_ext=Y&p_dlg_id=10185483&src=7328226&Act=8&sckw=WWMK11054649MPP001.GCM.8080.130
+[42]	Oracle.b, 2013. [online]  “Introduction to Data Guard”, http://docs.oracle.com/cd/B19306_01/server.102/b14239/concepts.htm 
+[43]	Parker, 1997. “Stream Databases”, Final Report for NSF Grant IRI: 89-17907.
+[44]	Paul Baran, 1964. “On Distributed Communications”, RM-3420 http://www.rand.org/about/history/baran.list.html.
+[45]	Justin Shi and Suntian Song, 2008. “Apparatus and Method of Optimizing Database Clustering with Zero Transaction Loss,” U.S. Patent Application.
+[46]	Simon Shim, 2012. “The CAP Theorem’s Growing Impact,” IEEE Computer Magazine, (Vol. 45, No. 2) pp. 21-22.
+[47]	Suntian Song, 2002. “Method and apparatus for database fault tolerance with instant transaction replication using off-the-shelf database servers and low bandwidth networks,” U.S. Patent #6,421,688.
+[48]	Tanenbaum and Steen 2006, Distributed Systems: Principles and Paradigms, 2nd Edition, ISBN-10: 0132392275 | ISBN-13: 978-0132392273, Pearson/Prentice Hall.[43]	TPC, 2013. [Online] http://www.tpc.org/tpce/ 
+[49]	Spark: Lightning Fast Cluster Computing [online]: https://amplab.cs.berkeley.edu/projects/spark-lightning-fast-cluster-computing/ 
+
